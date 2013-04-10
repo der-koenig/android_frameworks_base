@@ -16,7 +16,7 @@
 
 package com.android.internal.telephony.cat;
 
-import com.android.internal.telephony.IccFileHandler;
+import com.android.internal.telephony.uicc.IccFileHandler;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -36,6 +36,7 @@ import java.util.HashMap;
  */
 class IconLoader extends Handler {
     // members
+    private int mSlotId;
     private int mState = STATE_SINGLE_ICON;
     private ImageDescriptor mId = null;
     private Bitmap mCurrentIcon = null;
@@ -49,7 +50,6 @@ class IconLoader extends Handler {
     private Bitmap[] mIcons = null;
     private HashMap<Integer, Bitmap> mIconsCache = null;
 
-    private static IconLoader sLoader = null;
 
     // Loader state values.
     private static final int STATE_SINGLE_ICON = 1;
@@ -68,23 +68,20 @@ class IconLoader extends Handler {
     private static final int CLUT_ENTRY_SIZE = 3;
 
 
-    private IconLoader(Looper looper , IccFileHandler fh) {
-        super(looper);
+    public IconLoader(IccFileHandler fh, int slotId) {
+        super();
+        mSlotId = slotId;
+        HandlerThread thread = new HandlerThread("Cat Icon Loader");
+        thread.start();
         mSimFH = fh;
 
         mIconsCache = new HashMap<Integer, Bitmap>(50);
     }
 
-    static IconLoader getInstance(Handler caller, IccFileHandler fh) {
-        if (sLoader != null) {
-            return sLoader;
+    public void updateIccFileHandler(IccFileHandler fh) {
+        if (fh != null && fh != mSimFH) {
+            mSimFH = fh;
         }
-        if (fh != null) {
-            HandlerThread thread = new HandlerThread("Cat Icon Loader");
-            thread.start();
-            return new IconLoader(thread.getLooper(), fh);
-        }
-        return null;
     }
 
     void loadIcons(int[] recordNumbers, Message msg) {
@@ -151,6 +148,9 @@ class IconLoader extends Handler {
                 } else if (mId.codingScheme == ImageDescriptor.CODING_SCHEME_COLOUR) {
                     mIconData = rawData;
                     readClut();
+                } else {
+                    // post null icon back to the caller.
+                    postIcon();
                 }
                 break;
             case EVENT_READ_CLUT_DONE:

@@ -37,12 +37,14 @@ SECONDARY_FRAMEWORKS_SUBDIRS := \
         core/java/android/speech/srec \
         media/java/android/media/videoeditor \
         media/java/android/media/audiofx \
-        media/mca/effect/java/android/media/effect \
-        media/mca/effect/java/android/media/effect/effects \
+        media/mca/effect \
+        media/mca/filterfw \
+        media/mca/filterpacks \
         voip/java/com/android/server/sip \
         core/java/com/android/internal/widget/multiwaveview \
         core/java/com/android/internal/util/weather \
-        core/java/com/android/internal/http/multipart
+        core/java/com/android/internal/http/multipart \
+        telephony/java/com/android/internal/telephony/msim
 
 
 
@@ -229,6 +231,11 @@ LOCAL_SRC_FILES += \
 	telephony/java/com/android/internal/telephony/ITelephonyRegistry.aidl \
 	telephony/java/com/android/internal/telephony/IIccPhoneBook.aidl \
 	telephony/java/com/android/internal/telephony/ISms.aidl \
+	telephony/java/com/android/internal/telephony/ITelephonyRegistryMSim.aidl \
+	telephony/java/com/android/internal/telephony/msim/IIccPhoneBookMSim.aidl \
+	telephony/java/com/android/internal/telephony/msim/IPhoneSubInfoMSim.aidl \
+	telephony/java/com/android/internal/telephony/msim/ISmsMSim.aidl \
+	telephony/java/com/android/internal/telephony/msim/ITelephonyMSim.aidl \
 	telephony/java/com/android/internal/telephony/IWapPushManager.aidl \
 	wifi/java/android/net/wifi/IWifiManager.aidl \
 	wifi/java/android/net/wifi/p2p/IWifiP2pManager.aidl \

@@ -24,6 +24,8 @@ import android.graphics.Bitmap;
  */
 class CommandParams {
     CommandDetails cmdDet;
+    //Variable to track if an optional icon load has failed.
+    boolean loadIconFailed = false;
 
     CommandParams(CommandDetails cmdDet) {
         this.cmdDet = cmdDet;
@@ -77,6 +79,14 @@ class LaunchBrowserParams extends CommandParams {
             return true;
         }
         return false;
+    }
+}
+
+class SetEventListParams extends CommandParams {
+    int[] eventInfo;
+    SetEventListParams(CommandDetails cmdDet, int[] eventInfo) {
+        super(cmdDet);
+        this.eventInfo = eventInfo;
     }
 }
 
@@ -195,16 +205,5 @@ class BIPClientParams extends CommandParams {
             return true;
         }
         return false;
-    }
-}
-
-class SendSMSParams extends DisplayTextParams {
-    String pdu;
-    String smscAddress;
-
-    SendSMSParams(CommandDetails cmdDet, TextMessage textmessage, String smscaddress, String smsPdu) {
-        super(cmdDet, textmessage);
-        smscAddress = smscaddress;
-        pdu = smsPdu;
     }
 }

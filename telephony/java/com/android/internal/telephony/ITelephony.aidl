@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (c) 2009-2011, The Linux Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import java.util.List;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.CellInfo;
+import com.android.internal.telephony.QosSpec;
 
 /**
  * Interface used to interact with the phone.  Mostly this is used by the
@@ -161,6 +163,24 @@ interface ITelephony {
     boolean supplyPuk(String puk, String pin);
 
     /**
+     * Supply a pin to unlock the SIM.  Blocks until a result is determined.
+     * Returns a specific success/error code.
+     * @param pin The pin to check.
+     * @return Phone.PIN_RESULT_SUCCESS on success. Otherwise error code
+     */
+    int supplyPinReportResult(String pin);
+
+    /**
+     * Supply puk to unlock the SIM and set SIM pin to new pin.
+     * Blocks until a result is determined.
+     * Returns a specific success/error code.
+     * @param puk The puk to check
+     *        pin The pin to check.
+     * @return Phone.PIN_RESULT_SUCCESS on success. Otherwise error code
+     */
+    int supplyPukReportResult(String puk, String pin);
+
+    /**
      * Handles PIN MMI commands (PIN/PIN2/PUK/PUK2), which are initiated
      * without SEND (so <code>dial</code> is not appropriate).
      *
@@ -203,6 +223,55 @@ interface ITelephony {
      * Disable a specific APN type.
      */
     int disableApnType(String type);
+
+    /**
+     * Enable QoS
+     * @param qosSpec QoS spec containing various QoS parameters
+     * @param type Type of data connection (any of Phone.APN_TYPE_*)
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int enableQos(in QosSpec qosSpec, String type);
+
+    /**
+     * Disable QoS
+     * @param qosId QoS Identifier
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int disableQos(int qosId);
+
+    /**
+     * Modify QoS
+     * @param qosId QoS Identifier
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int modifyQos(int qosId, in QosSpec qosSpec);
+
+    /**
+     * Suspend QoS
+     * @param qosId QoS Identifier
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int suspendQos(int qosId);
+
+    /**
+     * Resume QoS
+     * @param qosId QoS Identifier
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int resumeQos(int qosId);
+
+    /**
+     * Get QoS
+     * @param qosId QoS Identifier
+     * @return Phone.QOS_REQUEST_SUCCESS - success, else failure
+     * {@hide}
+     */
+    int getQosStatus(int qosId);
 
     /**
      * Allow mobile data connections.
@@ -277,6 +346,11 @@ interface ITelephony {
     boolean hasIccCard();
 
     /**
+     * Gets the number of attempts remaining for PIN1/PUK1 unlock.
+     */
+    int getIccPin1RetryCount();
+
+    /**
      * Return if the current radio is LTE on CDMA. This
      * is a tri-state return value as for a period of time
      * the mode may be unknown.
@@ -292,5 +366,28 @@ interface ITelephony {
     List<CellInfo> getAllCellInfo();
 
     int getLteOnGsmMode();
+
+    /**
+      * Sets the transmit power
+      *
+      * @param powerLevel Transmit power level to set. One of:
+      *            TRANSMIT_POWER_DEFAULT      -  restore default transmit power
+      *            TRANSMIT_POWER_WIFI_HOTSPOT -  reduce transmit power as per FCC
+      *                                regulations (CFR47 2.1093) for WiFi hotspot
+      * @return true if success
+      */
+     boolean setTransmitPower(int powerLevel);
+
+    /**
+     * Modify data readiness checks performed during data call setup
+     *
+     * @param checkConnectivity - check for network state in service,
+                                  roaming and data in roaming enabled.
+     * @param checkSubscription - check for icc/nv ready and icc records loaded.
+     * @param tryDataCalls - set to true to attempt data calls if data call is not already active.
+     *
+     */
+    void setDataReadinessChecks(
+            boolean checkConnectivity, boolean checkSubscription, boolean tryDataCalls);
 }
 

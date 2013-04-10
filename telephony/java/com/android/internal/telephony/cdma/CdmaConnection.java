@@ -33,6 +33,7 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.ServiceState;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.telephony.RILConstants;
+import com.android.internal.telephony.uicc.IccCardApplicationStatus;
 
 /**
  * {@hide}
@@ -207,17 +208,26 @@ public class CdmaConnection extends Connection {
 
     /*package*/ boolean
     compareTo(DriverCall c) {
-        // On mobile originated (MO) calls, the phone number may have changed
-        // due to a SIM Toolkit call control modification.
-        //
-        // We assume we know when MO calls are created (since we created them)
-        // and therefore don't need to compare the phone number anyway.
-        if (! (isIncoming || c.isMT)) return true;
 
-        // ... but we can compare phone numbers on MT calls, and we have
-        // no control over when they begin, so we might as well
+        Log.d(LOG_TAG, "Comparing new connection " + c + "with base connection " +
+                this);
 
         String cAddress = PhoneNumberUtils.stringFromStringAndTOA(c.number, c.TOA);
+
+        if (!(isIncoming || c.isMT)) {
+            /*
+             * On mobile originated (MO) calls, the phone number may have
+             * changed due to a SIM Toolkit call control modification. We assume
+             * we know when MO calls are created (since we created them). We
+             * still need to compare the phone number anyway because modem could
+             * have dropped the active call and replaced it with the pendingMO
+             */
+            return equalsHandlesNulls(address, cAddress);
+        }
+
+        // we can compare phone numbers on MT calls, and we have
+        // no control over when they begin, so we might as well
+
         return isIncoming == c.isMT && equalsHandlesNulls(address, cAddress);
     }
 
@@ -400,6 +410,12 @@ public class CdmaConnection extends Connection {
                 return DisconnectCause.CALL_BARRED;
             case CallFailCause.FDN_BLOCKED:
                 return DisconnectCause.FDN_BLOCKED;
+            case CallFailCause.DIAL_MODIFIED_TO_USSD:
+                return DisconnectCause.DIAL_MODIFIED_TO_USSD;
+            case CallFailCause.DIAL_MODIFIED_TO_SS:
+                return DisconnectCause.DIAL_MODIFIED_TO_SS;
+            case CallFailCause.DIAL_MODIFIED_TO_DIAL:
+                return DisconnectCause.DIAL_MODIFIED_TO_DIAL;
             case CallFailCause.CDMA_LOCKED_UNTIL_POWER_CYCLE:
                 return DisconnectCause.CDMA_LOCKED_UNTIL_POWER_CYCLE;
             case CallFailCause.CDMA_DROP:
@@ -432,7 +448,8 @@ public class CdmaConnection extends Connection {
                     return DisconnectCause.OUT_OF_SERVICE;
                 } else if (phone.mCdmaSubscriptionSource ==
                                CdmaSubscriptionSourceManager.SUBSCRIPTION_FROM_RUIM
-                           && phone.getIccCard().getState() != IccCard.State.READY) {
+                               && (phone.getCurrentUiccState() !=
+                                          IccCardApplicationStatus.AppState.APPSTATE_READY)) {
                     return DisconnectCause.ICC_ERROR;
                 } else if (causeCode==CallFailCause.NORMAL_CLEARING) {
                     return DisconnectCause.NORMAL;

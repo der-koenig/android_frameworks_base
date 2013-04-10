@@ -21,12 +21,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.android.internal.telephony.AdnRecord;
-import com.android.internal.telephony.AdnRecordCache;
-import com.android.internal.telephony.IccConstants;
-import com.android.internal.telephony.IccFileHandler;
-import com.android.internal.telephony.IccUtils;
 import com.android.internal.telephony.PhoneBase;
+import com.android.internal.telephony.uicc.AdnRecord;
+import com.android.internal.telephony.uicc.AdnRecordCache;
+import com.android.internal.telephony.uicc.IccConstants;
+import com.android.internal.telephony.uicc.IccFileHandler;
+import com.android.internal.telephony.uicc.IccUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,7 +149,11 @@ public class UsimPhoneBookManager extends Handler implements IccConstants {
 
     private void readEmailFileAndWait(int recNum) {
         Map <Integer,Integer> fileIds;
-        fileIds = mPbrFile.mFileIds.get(recNum);
+        if (mPbrFile == null) {
+            return;
+        } else {
+            fileIds = mPbrFile.mFileIds.get(recNum);
+        }
         if (fileIds == null) return;
 
         if (fileIds.containsKey(USIM_EFEMAIL_TAG)) {
@@ -303,7 +307,11 @@ public class UsimPhoneBookManager extends Handler implements IccConstants {
 
     private void readAdnFileAndWait(int recNum) {
         Map <Integer,Integer> fileIds;
-        fileIds = mPbrFile.mFileIds.get(recNum);
+        if (mPbrFile == null) {
+            return;
+        } else {
+            fileIds = mPbrFile.mFileIds.get(recNum);
+        }
         if (fileIds == null || fileIds.isEmpty()) return;
 
 

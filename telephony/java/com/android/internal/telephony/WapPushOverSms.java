@@ -28,6 +28,9 @@ import android.util.Log;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.android.internal.telephony.MSimConstants;
+import com.android.internal.telephony.uicc.IccUtils;
+
 /**
  * WAP push handler class.
  *
@@ -68,6 +71,8 @@ public class WapPushOverSms {
         public void onServiceDisconnected(ComponentName name) {
             mWapPushMan = null;
             if (false) Log.v(LOG_TAG, "wappush manager disconnected.");
+            // Detach the previous Binder
+            mOwner.unbindService(mWapConn);
             // WapPushManager must be always attached.
             rebindWapPushManager();
         }
@@ -230,6 +235,8 @@ public class WapPushOverSms {
                     intent.putExtra("data", intentData);
                     intent.putExtra("contentTypeParameters",
                             pduDecoder.getContentParameters());
+                    intent.putExtra(MSimConstants.SUBSCRIPTION_KEY,
+                            mSmsDispatcher.mPhone.getSubscription());
 
                     int procRet = wapPushMan.processMessage(wapAppId, contentType, intent);
                     if (false) Log.v(LOG_TAG, "procRet:" + procRet);
@@ -267,6 +274,7 @@ public class WapPushOverSms {
         intent.putExtra("header", header);
         intent.putExtra("data", intentData);
         intent.putExtra("contentTypeParameters", pduDecoder.getContentParameters());
+        intent.putExtra(MSimConstants.SUBSCRIPTION_KEY, mSmsDispatcher.mPhone.getSubscription());
 
         mSmsDispatcher.dispatch(intent, permission);
 

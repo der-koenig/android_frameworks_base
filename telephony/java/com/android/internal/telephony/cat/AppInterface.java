@@ -25,13 +25,34 @@ public interface AppInterface {
 
     /*
      * Intent's actions which are broadcasted by the Telephony once a new CAT
-     * proactive command, session end arrive.
+     * proactive command, session end, ALPHA during STK CC arrive.
      */
     public static final String CAT_CMD_ACTION =
                                     "android.intent.action.stk.command";
     public static final String CAT_SESSION_END_ACTION =
                                     "android.intent.action.stk.session_end";
+    public static final String CAT_ALPHA_NOTIFY_ACTION =
+                                    "android.intent.action.stk.alpha_notify";
 
+    // This is broadcast from the ActivityManagerService when the screen
+    // switches to idle or busy state
+    public static final String CAT_IDLE_SCREEN_ACTION =
+                                    "android.intent.action.stk.idle_screen";
+
+    // This is broadcast from the Stk Apps to ActivityManagerService when the screen
+    // status is requested.
+    public static final String CHECK_SCREEN_IDLE_ACTION =
+                                    "android.intent.action.stk.check_screen_idle";
+
+    //This is used to send ALPHA string from card to STK App.
+    public static final String ALPHA_STRING = "alpha_string";
+    // This is used to send refresh-result when MSG_ID_ICC_REFRESH is received.
+    public static final String REFRESH_RESULT = "refresh_result";
+    //This is used to send card status from card to STK App.
+    public static final String CARD_STATUS = "card_status";
+    //Intent's actions are broadcasted by Telephony once IccRefresh occurs.
+    public static final String CAT_ICC_STATUS_CHANGE =
+                                    "android.intent.action.stk.icc_status_change";
     /*
      * Callback function from app to telephony to pass a result code and user's
      * input back to the ICC.
@@ -64,7 +85,8 @@ public interface AppInterface {
         OPEN_CHANNEL(0x40),
         CLOSE_CHANNEL(0x41),
         RECEIVE_DATA(0x42),
-        SEND_DATA(0x43);
+        SEND_DATA(0x43),
+        GET_CHANNEL_STATUS(0x44);
 
         private int mValue;
 

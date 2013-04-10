@@ -893,11 +893,11 @@ class KeyguardStatusViewManager implements OnClickListener {
                 && (simState == IccCard.State.ABSENT || simState == IccCard.State.PERM_DISABLED));
 
         // Assume we're NETWORK_LOCKED if not provisioned
-        simState = missingAndNotProvisioned ? State.NETWORK_LOCKED : simState;
+        simState = missingAndNotProvisioned ? State.PERSO_LOCKED : simState;
         switch (simState) {
             case ABSENT:
                 return StatusMode.SimMissing;
-            case NETWORK_LOCKED:
+            case PERSO_LOCKED:
                 return StatusMode.SimMissingLocked;
             case NOT_READY:
                 return StatusMode.SimMissing;

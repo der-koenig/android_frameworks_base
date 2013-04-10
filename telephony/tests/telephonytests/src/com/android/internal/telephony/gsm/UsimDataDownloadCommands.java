@@ -18,15 +18,16 @@ package com.android.internal.telephony.gsm;
 
 import android.content.Context;
 import android.os.AsyncResult;
-import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.internal.telephony.BaseCommands;
-import com.android.internal.telephony.IccIoResult;
 import com.android.internal.telephony.UUSInfo;
+import com.android.internal.telephony.uicc.IccIoResult;
+import com.android.internal.telephony.cdma.CdmaSmsBroadcastConfigInfo;
 
+import java.util.ArrayList;
 import junit.framework.Assert;
 
 /**
@@ -215,7 +216,7 @@ class UsimDataDownloadCommands extends BaseCommands {
     }
 
     @Override
-    public void supplyNetworkDepersonalization(String netpin, Message result) {
+    public void supplyDepersonalization(String pin, int type, Message onComplete) {
     }
 
     @Override
@@ -352,6 +353,16 @@ class UsimDataDownloadCommands extends BaseCommands {
 
     @Override
     public void sendCdmaSms(byte[] pdu, Message response) {
+    }
+
+    @Override
+    public void sendImsGsmSms (String smscPDU, String pdu,
+            int retry, int messageRef, Message response) {
+    }
+
+    @Override
+    public void sendImsCdmaSms(byte[] pdu, int retry, int messageRef,
+            Message response) {
     }
 
     @Override
@@ -546,6 +557,10 @@ class UsimDataDownloadCommands extends BaseCommands {
     }
 
     @Override
+    public void getImsRegistrationState (Message result) {
+    }
+
+    @Override
     public void sendCDMAFeatureCode(String FeatureCode, Message response) {
     }
 
@@ -595,6 +610,10 @@ class UsimDataDownloadCommands extends BaseCommands {
     }
 
     @Override
+    public void setCdmaBroadcastConfig(CdmaSmsBroadcastConfigInfo[] configs, Message response) {
+    }
+
+    @Override
     public void getCdmaBroadcastConfig(Message result) {
     }
 
@@ -624,14 +643,40 @@ class UsimDataDownloadCommands extends BaseCommands {
     }
 
     @Override
-    public boolean needsOldRilFeature(String feature) { return false; }
+    public void getDataCallProfile(int appType, Message result) {
+    }
 
-    @Override
-    public void setOnCatSendSmsResult(Handler h, int what, Object obj) {
+    public void setupQosReq (int callId, ArrayList<String> qosFlows, Message result) {
+    }
+
+    public void releaseQos (int qosId, Message result) {
+    }
+
+    public void modifyQos (int qosId, ArrayList<String> qosFlows, Message result) {
+    }
+
+    public void suspendQos (int qosId, Message result) {
+    }
+
+    public void resumeQos (int qosId, Message result) {
+    }
+
+    public void getQosStatus (int qosId, Message result) {
+    }
+
+    public void setSubscriptionMode (int subscriptionMode, Message result) {
     }
 
     @Override
-    public void unSetOnCatSendSmsResult(Handler h) {
+    public void setUiccSubscription(int slotId, int appIndex, int subId, int subStatus,
+            Message result) {
     }
 
+    @Override
+    public void setDataSubscription (Message result) {
+    }
+
+    @Override
+    public void setTransmitPower(int powerLevel, Message result) {
+    }
 }

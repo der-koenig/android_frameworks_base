@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseIntArray;
 
+import static com.android.internal.telephony.MSimConstants.SUBSCRIPTION_KEY;
 import static com.android.internal.telephony.TelephonyProperties.PROPERTY_ICC_OPERATOR_ISO_COUNTRY;
 import static com.android.internal.telephony.TelephonyProperties.PROPERTY_IDP_STRING;
 import static com.android.internal.telephony.TelephonyProperties.PROPERTY_OPERATOR_ISO_COUNTRY;
@@ -161,6 +162,12 @@ public class PhoneNumberUtils
         // TODO: We don't check for SecurityException here (requires
         // CALL_PRIVILEGED permission).
         if (scheme.equals("voicemail")) {
+            if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                int subscription = intent.getIntExtra(SUBSCRIPTION_KEY,
+                        MSimTelephonyManager.getDefault().getDefaultSubscription());
+                return MSimTelephonyManager.getDefault()
+                        .getCompleteVoiceMailNumber(subscription);
+            }
             return TelephonyManager.getDefault().getCompleteVoiceMailNumber();
         }
 
@@ -1485,13 +1492,6 @@ public class PhoneNumberUtils
      * @hide
      */
     public static String normalizeNumber(String phoneNumber) {
-        // chop off CLIR prefix
-        if (phoneNumber.startsWith(CLIR_ON)) {
-            phoneNumber = phoneNumber.substring(CLIR_ON.length() - 1);
-        } else if (phoneNumber.startsWith(CLIR_OFF)) {
-            phoneNumber = phoneNumber.substring(CLIR_OFF.length() - 1);
-        }
-
         StringBuilder sb = new StringBuilder();
         int len = phoneNumber.length();
         for (int i = 0; i < len; i++) {
@@ -1690,9 +1690,14 @@ public class PhoneNumberUtils
         // to the list.
         number = extractNetworkPortionAlt(number);
 
-        // retrieve the list of emergency numbers
-        // check read-write ecclist property first
-        String numbers = SystemProperties.get("ril.ecclist");
+        String numbers = "";
+        for (int i = 0; i < MSimTelephonyManager.getDefault().getPhoneCount(); i++) {
+            // retrieve the list of emergency numbers
+            // check read-write ecclist property first
+            String ecclist = (i == 0) ? "ril.ecclist" : ("ril.ecclist" + i);
+            numbers = numbers + SystemProperties.get(ecclist) + ",";
+        }
+
         if (TextUtils.isEmpty(numbers)) {
             // then read-only ecclist property since old RIL only uses this
             numbers = SystemProperties.get("ro.ril.ecclist");
@@ -1833,7 +1838,13 @@ public class PhoneNumberUtils
         String vmNumber;
 
         try {
-            vmNumber = TelephonyManager.getDefault().getVoiceMailNumber();
+            if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+                int subscription = MSimTelephonyManager.getDefault()
+                        .getPreferredVoiceSubscription();
+                vmNumber = MSimTelephonyManager.getDefault().getVoiceMailNumber(subscription);
+            } else {
+                vmNumber = TelephonyManager.getDefault().getVoiceMailNumber();
+            }
         } catch (SecurityException ex) {
             return false;
         }

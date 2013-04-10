@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +18,11 @@
 
 package com.android.internal.telephony;
 
+import com.android.internal.telephony.cdma.CdmaSmsBroadcastConfigInfo;
 import com.android.internal.telephony.gsm.SmsBroadcastConfigInfo;
+import com.android.internal.telephony.uicc.IccCardStatus;
+
+import java.util.ArrayList;
 
 import android.os.Message;
 import android.os.Handler;
@@ -111,6 +117,17 @@ public interface CommandsInterface {
     void getVoiceRadioTechnology(Message result);
 
     /**
+     * response.obj.result is an int[2]
+     *
+     * response.obj.result[0] is registration state
+     *                        0 - Not registered
+     *                        1 - Registered
+     * response.obj.result[1] is of type const RIL_IMS_SMS_Format,
+     *                        corresponds to sms format used for SMS over IMS.
+     */
+    void getImsRegistrationState(Message result);
+
+    /**
      * Fires on any RadioState transition
      * Always fires immediately as well
      *
@@ -123,6 +140,15 @@ public interface CommandsInterface {
 
     void registerForVoiceRadioTechChanged(Handler h, int what, Object obj);
     void unregisterForVoiceRadioTechChanged(Handler h);
+    void registerForImsNetworkStateChanged(Handler h, int what, Object obj);
+    void unregisterForImsNetworkStateChanged(Handler h);
+
+    /**
+     * Indications for tethered mode calls. ON/OFF indications should trigger
+     * immediate data call retries.
+     */
+    void registerForTetheredModeStateChanged(Handler h, int what, Object obj);
+    void unregisterForTetheredModeStateChanged(Handler h);
 
     /**
      * Fires on any transition into RadioState.isOn()
@@ -178,6 +204,16 @@ public interface CommandsInterface {
     void unregisterForInCallVoicePrivacyOn(Handler h);
     void registerForInCallVoicePrivacyOff(Handler h, int what, Object obj);
     void unregisterForInCallVoicePrivacyOff(Handler h);
+
+    /**
+     * Handlers for subscription status change indications.
+     *
+     * @param h Handler for subscription status change messages.
+     * @param what User-defined message code.
+     * @param obj User object.
+     */
+    void registerForSubscriptionStatusChanged(Handler h, int what, Object obj);
+    void unregisterForSubscriptionStatusChanged(Handler h);
 
     /**
      * unlike the register* methods, there's only one new 3GPP format SMS handler.
@@ -384,6 +420,28 @@ public interface CommandsInterface {
     //void unSetSuppServiceNotifications(Handler h);
 
     /**
+     * Sets the handler for Alpha Notification during STK Call Control.
+     * Unlike the register* methods, there's only one notification handler
+     *
+     * @param h Handler for notification message.
+     * @param what User-defined message code.
+     * @param obj User object.
+     */
+    void setOnCatCcAlphaNotify(Handler h, int what, Object obj);
+    void unSetOnCatCcAlphaNotify(Handler h);
+
+    /**
+     * Sets the handler for notifying SS Data during STK Call Control.
+     * Unlike the register* methods, there's only one notification handler
+     *
+     * @param h Handler for notification message.
+     * @param what User-defined message code.
+     * @param obj User object.
+     */
+    void setOnSS(Handler h, int what, Object obj);
+    void unSetOnSS(Handler h);
+
+    /**
      * Sets the handler for Event Notifications for CDMA Display Info.
      * Unlike the register* methods, there's only one notification handler
      *
@@ -538,6 +596,16 @@ public interface CommandsInterface {
      void registerForExitEmergencyCallbackMode(Handler h, int what, Object obj);
      void unregisterForExitEmergencyCallbackMode(Handler h);
 
+    /**
+     * Handlers for QoS state change indication
+     * @param h Handler for subscription ready messages.
+     * @param what User-defined message code.
+     * @param obj User object.
+     */
+    void registerForQosStateChangedInd(Handler h, int what, Object obj);
+    void unregisterForQosStateChangedInd(Handler h);
+
+
      /**
       * Registers the handler for RIL_UNSOL_RIL_CONNECT events.
       *
@@ -687,7 +755,7 @@ public interface CommandsInterface {
 
     void changeBarringPassword(String facility, String oldPwd, String newPwd, Message result);
 
-    void supplyNetworkDepersonalization(String netpin, Message result);
+    void supplyDepersonalization(String netpin, int type, Message result);
 
     /**
      *  returned message
@@ -1001,6 +1069,31 @@ public interface CommandsInterface {
     void sendCdmaSms(byte[] pdu, Message response);
 
     /**
+     * send SMS over IMS with 3GPP/GSM SMS format
+     * @param smscPDU is smsc address in PDU form GSM BCD format prefixed
+     *      by a length byte (as expected by TS 27.005) or NULL for default SMSC
+     * @param pdu is SMS in PDU format as an ASCII hex string
+     *      less the SMSC address
+     * @param retry indicates if this is a retry; 0 == not retry, nonzero = retry
+     * @param messageRef valid field if retry is set to nonzero.
+     *        Contains messageRef from RIL_SMS_Response corresponding to failed MO SMS
+     * @param response sent when operation completes
+     */
+    void sendImsGsmSms (String smscPDU, String pdu, int retry, int messageRef,
+            Message response);
+
+    /**
+     * send SMS over IMS with 3GPP2/CDMA SMS format
+     * @param pdu is CDMA-SMS in internal pseudo-PDU format
+     * @param response sent when operation completes
+     * @param retry indicates if this is a retry; 0 == not retry, nonzero = retry
+     * @param messageRef valid field if retry is set to nonzero.
+     *        Contains messageRef from RIL_SMS_Response corresponding to failed MO SMS
+     * @param response sent when operation completes
+     */
+    void sendImsCdmaSms(byte[] pdu, int retry, int messageRef, Message response);
+
+    /**
      * Deletes the specified SMS record from SIM memory (EF_SMS).
      *
      * @param index index of the SMS record to delete
@@ -1311,6 +1404,9 @@ public interface CommandsInterface {
 
     void invokeOemRilRequestStrings(String[] strings, Message response);
 
+    void setOnUnsolOemHookExtApp(Handler h, int what, Object obj);
+
+    void unSetOnUnsolOemHookExtApp(Handler h);
 
     /**
      * Send TERMINAL RESPONSE to the SIM, after processing a proactive command
@@ -1527,6 +1623,7 @@ public interface CommandsInterface {
      */
     // TODO: Change the configValuesArray to a RIL_BroadcastSMSConfig
     public void setCdmaBroadcastConfig(int[] configValuesArray, Message result);
+    public void setCdmaBroadcastConfig(CdmaSmsBroadcastConfigInfo[] configs, Message response);
 
     /**
      * Query the current configuration of cdma cell broadcast SMS.
@@ -1569,6 +1666,18 @@ public interface CommandsInterface {
     public int getLteOnGsmMode();
 
     /**
+     * Get the data call profile information from the modem
+     *
+     * @param appType
+     *          Callback message containing the count and the list of {@link
+     *          RIL_DataCallProfileInfo}
+     *
+     * @param result
+     *          Callback message
+     */
+    public void getDataCallProfile(int appType, Message result);
+
+    /**
      * Request the ISIM application on the UICC to perform the AKA
      * challenge/response algorithm for IMS authentication. The nonce string
      * and challenge response are Base64 encoded Strings.
@@ -1582,17 +1691,102 @@ public interface CommandsInterface {
      * Notifiy that we are testing an emergency call
      */
     public void testingEmergencyCall();
+    /**
+     * Sets Quality of Service(QoS) parameters at Modem.
+     * @param callId
+     *          Call ID of the data call for which QoS is requested
+     * @param qosFlows
+     *          List of QoS flows to be setup for this call
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void setupQosReq (int callId, ArrayList<String> qosFlows, Message result);
 
     /**
-     * @hide
-     * CM-specific: Ask the RIL about the presence of back-compat flags
-     */
-    public boolean needsOldRilFeature(String feature);
+     * Request to Quality of Service(QOS).
+     * @param qosId
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void releaseQos (int qosId, Message result);
+
     /**
-     * @hide
-     * samsung stk service implementation - set up registrant for sending
-     * sms send result from modem(RIL) to catService
+     * Modify an active Quality of Service(QoS).
+     * @param qosId
+     * @param qosFlows
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void modifyQos (int qosId, ArrayList<String> qosFlows, Message result);
+
+    /**
+     * Suspends an active Quality of Service(QoS).
+     * @param qosId
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void suspendQos (int qosId, Message result);
+
+    /**
+     * Resume a suspended Quality of Service(QoS).
+     * @param qosId
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void resumeQos (int qosId, Message result);
+
+    /**
+     * Gets current status and parameters associated with the given QoS ID.
+     * @param qosId
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void getQosStatus (int qosId, Message result);
+
+    /**
+     * Sets the transmit power
+     *
+     * @param powerLevel Transmit power level to set. One of:
+     *            TRANSMIT_POWER_DEFAULT
+     *            TRANSMIT_POWER_WIFI_HOTSPOT
+     * @param result Callback message contains the information of
+     *            SUCCESS/FAILURE.
      */
-    void setOnCatSendSmsResult(Handler h, int what, Object obj);
-    void unSetOnCatSendSmsResult(Handler h);
+    void setTransmitPower(int powerLevel, Message result);
+
+   /**
+     * Sets user selected subscription at Modem.
+     *
+     * @param slotId
+     *          Slot.
+     * @param appIndex
+     *          Application index in the card.
+     * @param subId
+     *          Indicates subscription 0 or subscription 1.
+     * @param subStatus
+     *          Activation status, 1 = activate and 0 = deactivate.
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+     */
+    public void setUiccSubscription(int slotId, int appIndex, int subId, int subStatus,
+            Message result);
+
+    /**
+     * Set Data Subscription preference at Modem.
+     *
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+     */
+    public void setDataSubscription (Message result);
+
+    /**
+     * Sets SingleStandByMode or DualStandBy mode at Modem.
+     * @param subscriptionMode
+                1 for SingleStandBy (Single SIM functionality)
+                2 for DualStandBy (Dual SIM functionality)
+     * @param result
+     *          Callback message contains the information of SUCCESS/FAILURE.
+    */
+    public void setSubscriptionMode (int subscriptionMode, Message result);
+
 }

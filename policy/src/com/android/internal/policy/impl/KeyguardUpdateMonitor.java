@@ -151,8 +151,8 @@ public class KeyguardUpdateMonitor {
                 } else {
                     state = IccCard.State.UNKNOWN;
                 }
-            } else if (IccCard.INTENT_VALUE_LOCKED_NETWORK.equals(stateExtra)) {
-                state = IccCard.State.NETWORK_LOCKED;
+            } else if (IccCard.INTENT_VALUE_LOCKED_PERSO.equals(stateExtra)) {
+                state = IccCard.State.PERSO_LOCKED;
             } else {
                 state = IccCard.State.UNKNOWN;
             }

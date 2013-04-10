@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * Copyright (c) 2012 The Linux Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +56,16 @@ public interface RILConstants {
     int ILLEGAL_SIM_OR_ME = 15;               /* network selection failure due
                                                  to wrong SIM/ME and no
                                                  retries needed */
+    int DIAL_MODIFIED_TO_USSD = 17;           /* DIAL request modified to USSD */
+    int DIAL_MODIFIED_TO_SS = 18;             /* DIAL request modified to SS */
+    int DIAL_MODIFIED_TO_DIAL = 19;           /* DIAL request modified to DIAL with different data */
+    int USSD_MODIFIED_TO_DIAL = 20;           /* USSD request modified to DIAL */
+    int USSD_MODIFIED_TO_SS = 21;             /* USSD request modified to SS */
+    int USSD_MODIFIED_TO_USSD = 22;           /* USSD request modified to different USSD request */
+    int SS_MODIFIED_TO_DIAL = 23;             /* SS request modified to DIAL */
+    int SS_MODIFIED_TO_USSD = 24;             /* SS request modified to USSD */
+    int SS_MODIFIED_TO_SS = 25;               /* SS request modified to different SS request */
+    int SUBSCRIPTION_NOT_SUPPORTED = 26;      /* Subscription not supported */
 
     /* NETWORK_MODE_* See ril.h RIL_REQUEST_SET_PREFERRED_NETWORK_TYPE */
     int NETWORK_MODE_WCDMA_PREF     = 0; /* GSM/WCDMA (WCDMA preferred) */
@@ -72,7 +83,7 @@ public interface RILConstants {
     int NETWORK_MODE_LTE_GSM_WCDMA  = 9; /* LTE, GSM/WCDMA */
     int NETWORK_MODE_LTE_CMDA_EVDO_GSM_WCDMA = 10; /* LTE, CDMA, EvDo, GSM/WCDMA */
     int NETWORK_MODE_LTE_ONLY       = 11; /* LTE Only mode. */
-
+    int NETWORK_MODE_LTE_WCDMA      = 12; /* LTE/WCDMA */
     int PREFERRED_NETWORK_MODE      = NETWORK_MODE_WCDMA_PREF;
 
     int CDMA_CELL_BROADCAST_SMS_DISABLED = 1;
@@ -152,6 +163,16 @@ cat include/telephony/ril.h | \
     public static final int DATA_PROFILE_CBS       = 4;
     public static final int DATA_PROFILE_OEM_BASE  = 1000;
 
+    /**
+     * Tethered mode on/off indication for RIL_UNSOL_TETHERED_MODE_STATE_CHANGED
+     */
+    int RIL_TETHERED_MODE_ON = 1;
+    int RIL_TETHERED_MODE_OFF = 0;
+
+    /* Modem transmit power levels. See ril.h RIL_REQUEST_SET_TRANSMIT_POWER */
+    static final int TRANSMIT_POWER_DEFAULT = 0;
+    static final int TRANSMIT_POWER_WIFI_HOTSPOT = 1;
+
     int RIL_REQUEST_GET_SIM_STATUS = 1;
     int RIL_REQUEST_ENTER_SIM_PIN = 2;
     int RIL_REQUEST_ENTER_SIM_PUK = 3;
@@ -159,7 +180,7 @@ cat include/telephony/ril.h | \
     int RIL_REQUEST_ENTER_SIM_PUK2 = 5;
     int RIL_REQUEST_CHANGE_SIM_PIN = 6;
     int RIL_REQUEST_CHANGE_SIM_PIN2 = 7;
-    int RIL_REQUEST_ENTER_NETWORK_DEPERSONALIZATION = 8;
+    int RIL_REQUEST_ENTER_DEPERSONALIZATION_CODE = 8;
     int RIL_REQUEST_GET_CURRENT_CALLS = 9;
     int RIL_REQUEST_DIAL = 10;
     int RIL_REQUEST_GET_IMSI = 11;
@@ -260,6 +281,21 @@ cat include/telephony/ril.h | \
     int RIL_REQUEST_ACKNOWLEDGE_INCOMING_GSM_SMS_WITH_PDU = 106;
     int RIL_REQUEST_STK_SEND_ENVELOPE_WITH_STATUS = 107;
     int RIL_REQUEST_VOICE_RADIO_TECH = 108;
+    int RIL_REQUEST_IMS_REGISTRATION_STATE = 109;
+    int RIL_REQUEST_IMS_SEND_SMS = 110;
+    int RIL_REQUEST_GET_DATA_CALL_PROFILE = 111;
+    int RIL_REQUEST_SETUP_QOS = 112;
+    int RIL_REQUEST_RELEASE_QOS = 113;
+    int RIL_REQUEST_GET_QOS_STATUS = 114;
+    int RIL_REQUEST_MODIFY_QOS = 115;
+    int RIL_REQUEST_SUSPEND_QOS = 116;
+    int RIL_REQUEST_RESUME_QOS = 117;
+    int RIL_REQUEST_SET_UICC_SUBSCRIPTION = 118;
+    int RIL_REQUEST_SET_DATA_SUBSCRIPTION = 119;
+    int RIL_REQUEST_GET_UICC_SUBSCRIPTION = 120;
+    int RIL_REQUEST_GET_DATA_SUBSCRIPTION = 121;
+    int RIL_REQUEST_SET_SUBSCRIPTION_MODE = 122;
+    int RIL_REQUEST_SET_TRANSMIT_POWER = 123;
     int RIL_UNSOL_RESPONSE_BASE = 1000;
     int RIL_UNSOL_RESPONSE_RADIO_STATE_CHANGED = 1000;
     int RIL_UNSOL_RESPONSE_CALL_STATE_CHANGED = 1001;
@@ -293,9 +329,14 @@ cat include/telephony/ril.h | \
     int RIL_UNSOL_RINGBACK_TONE = 1029;
     int RIL_UNSOL_RESEND_INCALL_MUTE = 1030;
     int RIL_UNSOL_CDMA_SUBSCRIPTION_SOURCE_CHANGED = 1031;
-    int RIL_UNSOL_CDMA_PRL_CHANGED = 1032;
+    int RIL_UNSOl_CDMA_PRL_CHANGED = 1032;
     int RIL_UNSOL_EXIT_EMERGENCY_CALLBACK_MODE = 1033;
     int RIL_UNSOL_RIL_CONNECTED = 1034;
     int RIL_UNSOL_VOICE_RADIO_TECH_CHANGED = 1035;
-    int RIL_UNSOL_STK_SEND_SMS_RESULT = 11002; /* Samsung specific */
+    int RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED = 1036;
+    int RIL_UNSOL_TETHERED_MODE_STATE_CHANGED = 1037;
+    int RIL_UNSOL_QOS_STATE_CHANGED_IND = 1038;
+    int RIL_UNSOL_UICC_SUBSCRIPTION_STATUS_CHANGED = 1041;
+    int RIL_UNSOL_ON_SS = 1039;
+    int RIL_UNSOL_STK_CC_ALPHA_NOTIFY = 1040;
 }
