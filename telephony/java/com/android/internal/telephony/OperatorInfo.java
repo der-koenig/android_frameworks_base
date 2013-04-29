@@ -16,6 +16,8 @@
 
 package com.android.internal.telephony;
 
+import java.util.HashMap;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -30,10 +32,13 @@ public class OperatorInfo implements Parcelable {
         FORBIDDEN;
     }
 
+    private static HashMap<String, String[]> plmnEntries = 
+            new HashMap<String, String[]>();
+
     private String operatorAlphaLong;
     private String operatorAlphaShort;
     private String operatorNumeric;
-    private String operatorNetworkType;
+    private String operatorRat;
 
     private State state = State.UNKNOWN;
 
@@ -54,8 +59,8 @@ public class OperatorInfo implements Parcelable {
     }
 
     public String
-    getOperatorNetworkType() {
-        return operatorNetworkType;
+    getOperatorRat() {
+        return operatorRat;
     }
 
     public State
@@ -68,19 +73,29 @@ public class OperatorInfo implements Parcelable {
                 String operatorNumeric,
                 State state) {
         this (operatorAlphaLong, operatorAlphaShort,
-                operatorNumeric, "", state);
+                operatorNumeric, state, "");
     }
 
     public OperatorInfo(String operatorAlphaLong,
                 String operatorAlphaShort,
                 String operatorNumeric,
-                String operatorNetworkType,
-                State state) {
+                State state,
+                String operatorRat) {
 
-        this.operatorAlphaLong = operatorAlphaLong;
-        this.operatorAlphaShort = operatorAlphaShort;
+        if((operatorAlphaLong == null || operatorAlphaLong.equals("Unknown"))
+           && (operatorAlphaShort == null || operatorAlphaShort.equals("Unknown"))) {
+            String[] operatorNames = getOperatorNamesFromConfig(operatorNumeric);
+            if(operatorNames != null) {
+                this.operatorAlphaLong = operatorNames[0];
+                this.operatorAlphaShort = operatorNames[1];
+            }
+        }
+        if(this.operatorAlphaLong == null)
+            this.operatorAlphaLong = operatorNumeric;
+        if(this.operatorAlphaShort == null)
+            this.operatorAlphaShort = operatorNumeric;
         this.operatorNumeric = operatorNumeric;
-        this.operatorNetworkType = operatorNetworkType;
+        this.operatorRat = operatorRat;
 
         this.state = state;
     }
@@ -90,17 +105,17 @@ public class OperatorInfo implements Parcelable {
                 String operatorNumeric,
                 String stateString) {
         this (operatorAlphaLong, operatorAlphaShort,
-                operatorNumeric, "", rilStateToState(stateString));
+                operatorNumeric, stateString, "");
     }
 
     public OperatorInfo(String operatorAlphaLong,
                 String operatorAlphaShort,
                 String operatorNumeric,
-                String operatorNetworkType,
-                String stateString) {
+                String stateString,
+                String operatorRat) {
         this (operatorAlphaLong, operatorAlphaShort,
-                operatorNumeric, operatorNetworkType,
-                rilStateToState(stateString));
+                operatorNumeric, rilStateToState(stateString),
+                operatorRat);
     }
 
     /**
@@ -121,12 +136,24 @@ public class OperatorInfo implements Parcelable {
         }
     }
 
+    public static String[] getOperatorNamesFromConfig(String numeric) {
+        if(plmnEntries.containsKey(numeric)) {
+            return plmnEntries.get(numeric);
+        } else {
+            PlmnOverride plmnOverride = new PlmnOverride();
+            String[] operatorNames = plmnOverride.getOperatorNames(numeric);
+            if(operatorNames != null) {
+                plmnEntries.put(numeric, operatorNames);
+            }
+            return operatorNames;
+        }
+    }
 
     public String toString() {
         return "OperatorInfo " + operatorAlphaLong
                 + "/" + operatorAlphaShort
                 + "/" + operatorNumeric
-                + "/" + operatorNetworkType
+                + "/" + operatorRat
                 + "/" + state;
     }
 
@@ -151,6 +178,7 @@ public class OperatorInfo implements Parcelable {
         dest.writeString(operatorAlphaShort);
         dest.writeString(operatorNumeric);
         dest.writeSerializable(state);
+        dest.writeSerializable(operatorRat);
     }
 
     /**
@@ -164,7 +192,8 @@ public class OperatorInfo implements Parcelable {
                         in.readString(), /*operatorAlphaLong*/
                         in.readString(), /*operatorAlphaShort*/
                         in.readString(), /*operatorNumeric*/
-                        (State) in.readSerializable()); /*state*/
+                        (State) in.readSerializable(), /*state*/
+                        in.readString()); /*operatorRat*/
                 return opInfo;
             }
 

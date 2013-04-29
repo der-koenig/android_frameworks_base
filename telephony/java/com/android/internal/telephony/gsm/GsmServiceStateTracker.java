@@ -23,6 +23,7 @@ import com.android.internal.telephony.EventLogTags;
 import com.android.internal.telephony.IccCard;
 import com.android.internal.telephony.IccCard.State;
 import com.android.internal.telephony.MccTable;
+import com.android.internal.telephony.OperatorInfo;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.RestrictedState;
 import com.android.internal.R;
@@ -741,7 +742,17 @@ public class GsmServiceStateTracker extends ServiceStateTracker {
                     String opNames[] = (String[])ar.result;
 
                     if (opNames != null && opNames.length >= 3) {
-                         newSS.setOperatorName (opNames[0], opNames[1], opNames[2]);
+                        String[] operatorNamesFromConfig = null;
+                        if((opNames[0] == null || opNames[0].equals("Unknown"))
+                            && (opNames[1]== null || opNames[1].equals("Unknown"))) {
+                            operatorNamesFromConfig = OperatorInfo.getOperatorNamesFromConfig(opNames[2]);
+                        }
+                        if(operatorNamesFromConfig != null) {
+                            newSS.setOperatorName(operatorNamesFromConfig[0],
+                                    operatorNamesFromConfig[1], opNames[2]);
+                        } else {
+                            newSS.setOperatorName(opNames[0], opNames[1], opNames[2]);
+                        }
                     }
                 break;
 
