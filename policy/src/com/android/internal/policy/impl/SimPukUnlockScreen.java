@@ -304,7 +304,9 @@ public class SimPukUnlockScreen extends LinearLayout implements KeyguardScreen,
     }
 
     private void reportDigit(int digit) {
-        mFocusedEntry.append(Integer.toString(digit));
+        if (mFocusedEntry != null) {
+            mFocusedEntry.append(Integer.toString(digit));
+        }
     }
 
     void updateConfiguration() {
