@@ -32,6 +32,7 @@ import libcore.util.MutableInt;
 
 import android.telephony.MSimTelephonyManager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -93,8 +94,14 @@ class MSimKeyguardStatusViewManager extends KeyguardStatusViewManager {
         mCarrierText = "";
         for(int i = 0; i < mNumPhones; i++) {
             if(MSimTelephonyManager.getDefault().isSubActive(i)) {
-                if(!mCarrierText.equals("")) mCarrierText = mCarrierText.toString() + " / ";
-                mCarrierText = mCarrierText.toString() + mCarrierTextSub[i];
+                if(!TextUtils.isEmpty(mCarrierText))
+                    mCarrierText = mCarrierText.toString() + " / ";
+                if(TextUtils.isEmpty(mCarrierTextSub[i]))
+                    mCarrierText = mCarrierText.toString()
+                            + getContext().getResources().getText(
+                            R.string.lockscreen_carrier_default);
+                else
+                    mCarrierText = mCarrierText.toString() + mCarrierTextSub[i];
             }
         }
         update(CARRIER_TEXT, mCarrierText);
