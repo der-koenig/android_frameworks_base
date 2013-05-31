@@ -114,10 +114,10 @@ public class CarrierLabel extends TextView {
         }
         mText[subscription] = str;
 
-        String str2 = "";
+        String str2 = mText[0];
         for(int i = 0; i < mNumPhones; i++) {
             if(MSimTelephonyManager.getDefault().isSubActive(i)) {
-                if(!str2.equals("")) str2 += " / ";
+                if(!TextUtils.isEmpty(str2)) str2 += " / ";
                 str2 += str;
             }
         }

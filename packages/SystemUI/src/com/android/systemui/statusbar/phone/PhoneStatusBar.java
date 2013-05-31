@@ -457,7 +457,6 @@ public class PhoneStatusBar extends BaseStatusBar {
                 return mStatusBarWindow.onTouchEvent(event);
             }});
 
-        mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(R.id.status_bar);
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(
                     R.id.msim_status_bar);
@@ -1160,12 +1159,16 @@ public class PhoneStatusBar extends BaseStatusBar {
         }
 
         final boolean emergencyCallsShownElsewhere = mEmergencyCallLabel != null;
-        final boolean makeVisible;
+        boolean makeVisible;
 
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
-            makeVisible =
-                !(emergencyCallsShownElsewhere && mMSimNetworkController.isEmergencyOnly(0))
-                && mPile.getHeight() < (mScrollView.getHeight() - mCarrierLabelHeight);
+            makeVisible = false;
+            for (int i = 0; i < MSimTelephonyManager.getDefault().getPhoneCount(); i++) {
+                makeVisible = !(emergencyCallsShownElsewhere
+                    && mMSimNetworkController.isEmergencyOnly(i))
+                    && mPile.getHeight() < (mScrollView.getHeight() - mCarrierLabelHeight);
+                if (makeVisible) break;
+            }
         } else {
             makeVisible =
                 !(emergencyCallsShownElsewhere && mNetworkController.isEmergencyOnly())

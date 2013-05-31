@@ -142,6 +142,7 @@ public class MSimNetworkController extends NetworkController {
             mMSimState[i] = IccCard.State.READY;
             // phone_signal
             mMSimPhoneSignalIconId[i] = R.drawable.stat_sys_signal_null;
+            mMSimDataSignalIconId[i] = R.drawable.stat_sys_signal_null;
             mMSimLastPhoneSignalIconId[i] = -1;
             mMSimLastDataTypeIconId[i] = -1;
             mMSimDataConnected[i] = false;
@@ -272,7 +273,7 @@ public class MSimNetworkController extends NetworkController {
                 || action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)
                 || action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
             updateWifiState(intent);
-            refreshViews(mDefaultSubscription);
+            refreshViews();
         } else if (action.equals(TelephonyIntents.ACTION_SIM_STATE_CHANGED)) {
             updateSimState(intent);
             for (int sub = 0; sub < MSimTelephonyManager.getDefault().getPhoneCount(); sub++) {
@@ -290,17 +291,17 @@ public class MSimNetworkController extends NetworkController {
         } else if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION) ||
                  action.equals(ConnectivityManager.INET_CONDITION_ACTION)) {
             updateConnectivity(intent);
-            refreshViews(mDefaultSubscription);
+            refreshViews();
         } else if (action.equals(Intent.ACTION_CONFIGURATION_CHANGED)) {
-            refreshViews(mDefaultSubscription);
+            refreshViews();
         } else if (action.equals(Intent.ACTION_AIRPLANE_MODE_CHANGED)) {
             updateAirplaneMode();
-            refreshViews(mDefaultSubscription);
+            refreshViews();
         } else if (action.equals(WimaxManagerConstants.NET_4G_STATE_CHANGED_ACTION) ||
                 action.equals(WimaxManagerConstants.SIGNAL_LEVEL_CHANGED_ACTION) ||
                 action.equals(WimaxManagerConstants.WIMAX_NETWORK_STATE_CHANGED_ACTION)) {
             updateWimaxState(intent);
-            refreshViews(mDefaultSubscription);
+            refreshViews();
         }
     }
 
@@ -814,6 +815,12 @@ public class MSimNetworkController extends NetworkController {
     }
 
     // ===== Update the views =======================================================
+
+    protected void refreshViews() {
+        for (int i = 0; i < MSimTelephonyManager.getDefault().getPhoneCount(); i++) {
+            refreshViews(i);
+        }
+    }
 
     protected void refreshViews(int subscription) {
         Context context = mContext;

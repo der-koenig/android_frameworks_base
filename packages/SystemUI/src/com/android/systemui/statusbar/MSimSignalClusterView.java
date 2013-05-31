@@ -20,7 +20,11 @@
 
 package com.android.systemui.statusbar;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.database.ContentObserver;
+import android.os.Handler;
+import android.provider.Settings;
 import android.telephony.MSimTelephonyManager;
 import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
@@ -47,9 +51,12 @@ public class MSimSignalClusterView
 
     MSimNetworkController mMSimNC;
 
+    private static final int SIGNAL_CLUSTER_STYLE_NORMAL = 0;
+
+    private int mSignalClusterStyle;
     private boolean mWifiVisible = false;
     private int mWifiStrengthId = 0, mWifiActivityId = 0;
-    private boolean mMobileVisible = false;
+    private boolean[] mMobileVisible;
     private int[] mMobileStrengthId;
     private int[] mMobileActivityId;
     private int[] mMobileTypeId;
@@ -78,6 +85,26 @@ public class MSimSignalClusterView
     private int[] mNoSimSlotResourceId = {R.id.no_sim, R.id.no_sim_slot2, R.id.no_sim_slot3};
     private int mNumPhones = MSimTelephonyManager.getDefault().getPhoneCount();
 
+    Handler mHandler;
+
+    class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SIGNAL_TEXT), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updateSettings();
+        }
+    }
+
+
     public MSimSignalClusterView(Context context) {
         this(context, null);
     }
@@ -88,6 +115,7 @@ public class MSimSignalClusterView
 
     public MSimSignalClusterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mMobileVisible = new boolean[mNumPhones];
         mMobileStrengthId = new int[mNumPhones];
         mMobileDescription = new String[mNumPhones];
         mMobileTypeId = new int[mNumPhones];
@@ -99,11 +127,17 @@ public class MSimSignalClusterView
         mMobileActivity = new ImageView[mNumPhones];
         mMobileType = new ImageView[mNumPhones];
         for(int i=0; i < mNumPhones; i++) {
+            mMobileVisible[i] = false;
             mMobileStrengthId[i] = 0;
             mMobileTypeId[i] = 0;
             mMobileActivityId[i] = 0;
             mNoSimIconId[i] = 0;
         }
+
+        mHandler = new Handler();
+
+        SettingsObserver settingsObserver = new SettingsObserver(mHandler);
+        settingsObserver.observe();
     }
 
     public void setNetworkController(MSimNetworkController nc) {
@@ -165,7 +199,7 @@ public class MSimSignalClusterView
     public void setMobileDataIndicators(boolean visible, int strengthIcon, int activityIcon,
             int typeIcon, String contentDescription, String typeContentDescription,
             int noSimIcon, int subscription) {
-        mMobileVisible = visible;
+        mMobileVisible[subscription] = visible;
         mMobileStrengthId[subscription] = strengthIcon;
         mMobileActivityId[subscription] = activityIcon;
         mMobileTypeId[subscription] = typeIcon;
@@ -190,7 +224,8 @@ public class MSimSignalClusterView
         // ignore content description, so populate manually
         if (mWifiVisible && mWifiGroup.getContentDescription() != null)
             event.getText().add(mWifiGroup.getContentDescription());
-        if (mMobileVisible && mMobileGroup[MSimConstants.DEFAULT_SUBSCRIPTION].
+        if (mMobileVisible[MSimConstants.DEFAULT_SUBSCRIPTION]
+                && mMobileGroup[MSimConstants.DEFAULT_SUBSCRIPTION].
                 getContentDescription() != null)
             event.getText().add(mMobileGroup[MSimConstants.DEFAULT_SUBSCRIPTION].
                     getContentDescription());
@@ -200,11 +235,6 @@ public class MSimSignalClusterView
     // Run after each indicator change.
     private void applySubscription(int subscription) {
         if (mWifiGroup == null) return;
-
-        if(!MSimTelephonyManager.getDefault().isSubActive(subscription)) {
-            mMobileGroup[subscription].setVisibility(View.GONE);
-            return;
-        }
 
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
@@ -219,7 +249,7 @@ public class MSimSignalClusterView
                 String.format("wifi: %s sig=%d act=%d",
                 (mWifiVisible ? "VISIBLE" : "GONE"), mWifiStrengthId, mWifiActivityId));
 
-        if (mMobileVisible && !mIsAirplaneMode) {
+        if (mMobileVisible[subscription] && !mIsAirplaneMode) {
             mMobileGroup[subscription].setVisibility(View.VISIBLE);
             mMobile[subscription].setImageResource(mMobileStrengthId[subscription]);
             mMobileGroup[subscription].setContentDescription(mMobileTypeDescription + " "
@@ -240,12 +270,50 @@ public class MSimSignalClusterView
             mAirplane.setVisibility(View.GONE);
         }
 
-        if (mMobileVisible && mWifiVisible && ((mIsAirplaneMode) ||
-                (mNoSimIconId[subscription] != 0))) {
+        if (isMobileVisible() && mWifiVisible && mIsAirplaneMode) {
             mSpacer.setVisibility(View.INVISIBLE);
         } else {
             mSpacer.setVisibility(View.GONE);
         }
+
+        updateSettings(subscription);
+    }
+
+    private boolean isMobileVisible() {
+        for (int i=0; i < mNumPhones; i++) {
+            if (mMobileVisible[i]) return true;
+        }
+        return false;
+    }
+
+    private void updateSignalClusterStyle(int subscription) {
+        if (!mIsAirplaneMode) {
+            if(mMobileGroup[subscription] != null) {
+                if(mSignalClusterStyle == SIGNAL_CLUSTER_STYLE_NORMAL
+                    && mMobileVisible[subscription]) {
+                    mMobileGroup[subscription].setVisibility(View.VISIBLE);
+                } else {
+                    mMobileGroup[subscription].setVisibility(View.GONE);
+                }
+            }
+        }
+        if(mSignalClusterStyle != SIGNAL_CLUSTER_STYLE_NORMAL)
+            mSpacer.setVisibility(View.INVISIBLE);
+    }
+
+    private void updateSettings() {
+        ContentResolver resolver = mContext.getContentResolver();
+        mSignalClusterStyle = (Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_SIGNAL_TEXT, SIGNAL_CLUSTER_STYLE_NORMAL));
+        for(int i=0; i < mNumPhones; i++)
+            updateSignalClusterStyle(i);
+    }
+
+    private void updateSettings(int subscription) {
+        ContentResolver resolver = mContext.getContentResolver();
+        mSignalClusterStyle = (Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_SIGNAL_TEXT, SIGNAL_CLUSTER_STYLE_NORMAL));
+        updateSignalClusterStyle(subscription);
     }
 }
 
