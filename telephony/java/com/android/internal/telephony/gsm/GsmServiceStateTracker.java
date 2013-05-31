@@ -949,9 +949,10 @@ public class GsmServiceStateTracker extends ServiceStateTracker {
             mNitzUpdatedTime = false;
         }
 
-        IccCard iccCard = phone.getIccCard();
-        if (mEonsEnabled && (iccCard != null) &&
-                    (iccCard.getIccCardState() == State.READY)) {
+        UiccCardApplication uiccCardApplication = phone.getUiccCardApplication();
+
+        if (mEonsEnabled && (uiccCardApplication != null) &&
+                    (uiccCardApplication.getState() == AppState.APPSTATE_READY)) {
             Log.i(LOG_TAG,"Network State Changed, get EONS and update operator name display");
             updateEons();
         } else {
