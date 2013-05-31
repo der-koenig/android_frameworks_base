@@ -176,8 +176,10 @@ public final class Eons {
         String pnnName = null;
        
         // Get EONS for this operator from OPL/PNN data.
-        pnnRecord = mOplRecords.getMatchingPnnRecord(operator.getOperatorNumeric(), -1, false);
-        pnnName = mPnnRecords.getNameFromPnnRecord(pnnRecord, false);
+        if(mOplRecords != null) {
+            pnnRecord = mOplRecords.getMatchingPnnRecord(operator.getOperatorNumeric(), -1, false);
+            pnnName = mPnnRecords.getNameFromPnnRecord(pnnRecord, false);
+        }
         if (DBG) log("PLMN = " + operator.getOperatorNumeric() + ", ME Name = "
           + operator.getOperatorAlphaLong() + ", PNN Name = " + pnnName);
         // EONS could not be derived for this operator. Use the
