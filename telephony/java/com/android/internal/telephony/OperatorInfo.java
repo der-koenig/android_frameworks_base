@@ -33,6 +33,7 @@ public class OperatorInfo implements Parcelable {
     private String operatorAlphaLong;
     private String operatorAlphaShort;
     private String operatorNumeric;
+    private String operatorNetworkType;
 
     private State state = State.UNKNOWN;
 
@@ -52,6 +53,11 @@ public class OperatorInfo implements Parcelable {
         return operatorNumeric;
     }
 
+    public String
+    getOperatorNetworkType() {
+        return operatorNetworkType;
+    }
+
     public State
     getState() {
         return state;
@@ -61,21 +67,40 @@ public class OperatorInfo implements Parcelable {
                 String operatorAlphaShort,
                 String operatorNumeric,
                 State state) {
+        this (operatorAlphaLong, operatorAlphaShort,
+                operatorNumeric, "", state);
+    }
+
+    public OperatorInfo(String operatorAlphaLong,
+                String operatorAlphaShort,
+                String operatorNumeric,
+                String operatorNetworkType,
+                State state) {
 
         this.operatorAlphaLong = operatorAlphaLong;
         this.operatorAlphaShort = operatorAlphaShort;
         this.operatorNumeric = operatorNumeric;
+        this.operatorNetworkType = operatorNetworkType;
 
         this.state = state;
     }
-
 
     public OperatorInfo(String operatorAlphaLong,
                 String operatorAlphaShort,
                 String operatorNumeric,
                 String stateString) {
         this (operatorAlphaLong, operatorAlphaShort,
-                operatorNumeric, rilStateToState(stateString));
+                operatorNumeric, "", rilStateToState(stateString));
+    }
+
+    public OperatorInfo(String operatorAlphaLong,
+                String operatorAlphaShort,
+                String operatorNumeric,
+                String operatorNetworkType,
+                String stateString) {
+        this (operatorAlphaLong, operatorAlphaShort,
+                operatorNumeric, operatorNetworkType,
+                rilStateToState(stateString));
     }
 
     /**
@@ -101,6 +126,7 @@ public class OperatorInfo implements Parcelable {
         return "OperatorInfo " + operatorAlphaLong
                 + "/" + operatorAlphaShort
                 + "/" + operatorNumeric
+                + "/" + operatorNetworkType
                 + "/" + state;
     }
 
