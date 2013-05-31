@@ -20,6 +20,8 @@ import com.android.internal.widget.LockPatternUtils;
 
 import android.content.Context;
 import com.android.internal.telephony.IccCard;
+import android.telephony.MSimTelephonyManager;
+import android.telephony.TelephonyManager;
 
 /**
  * Knows how to create a lock pattern keyguard view, and answer questions about
@@ -46,8 +48,13 @@ public class LockPatternKeyguardViewProperties implements KeyguardViewProperties
             KeyguardViewCallback callback,
             KeyguardUpdateMonitor updateMonitor,
             KeyguardWindowController controller) {
-        return new LockPatternKeyguardView(context, callback, updateMonitor,
-                mLockPatternUtils, controller);
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            return new MSimLockPatternKeyguardView(context, callback, updateMonitor,
+                    mLockPatternUtils, controller);
+        } else {
+            return new LockPatternKeyguardView(context, callback, updateMonitor,
+                    mLockPatternUtils, controller);
+        }
     }
 
     public boolean isSecure() {
@@ -55,10 +62,20 @@ public class LockPatternKeyguardViewProperties implements KeyguardViewProperties
     }
 
     private boolean isSimPinSecure() {
-        final IccCard.State simState = mUpdateMonitor.getSimState();
-        return (simState == IccCard.State.PIN_REQUIRED
-                || simState == IccCard.State.PUK_REQUIRED
-                || simState == IccCard.State.PERM_DISABLED);
+        final IccCard.State[] simState;
+        boolean isSimPinSecure = false;
+        int numPhones = MSimTelephonyManager.getDefault().getPhoneCount();
+
+        simState = new IccCard.State[numPhones];
+        for (int i = 0; i < numPhones; i++) {
+            simState[i] = mUpdateMonitor.getSimState(i);
+            // isPinLocked returns true if SIM is PIN/PUK Locked.
+            isSimPinSecure = isSimPinSecure || (simState[i].isPinLocked()
+                    || simState[i] == IccCard.State.ABSENT
+                    || simState[i] == IccCard.State.PERM_DISABLED);
+            if (isSimPinSecure) break;
+        }
+        return isSimPinSecure;
     }
 
 }

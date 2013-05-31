@@ -18,6 +18,8 @@ package com.android.internal.policy.impl;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.telephony.MSimTelephonyManager;
+import android.telephony.TelephonyManager;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.security.KeyStore;
@@ -37,7 +39,7 @@ import com.android.internal.widget.LockPatternView.Cell;
 import java.util.List;
 
 /**
- * This is the screen that shows the circle unlock widget and instructs
+ * This is the screen that shows the 9 circle unlock widget and instructs
  * the user how to unlock their device, or make an emergency call.
  */
 class PatternUnlockScreen extends LinearLayoutWithDefaultTouchRecepient
@@ -172,8 +174,13 @@ class PatternUnlockScreen extends LinearLayoutWithDefaultTouchRecepient
             inflater.inflate(R.layout.keyguard_screen_unlock_landscape, this, true);
         }
         LockScreen.setBackground(context, (ViewGroup) findViewById(R.id.root));
-        mKeyguardStatusViewManager = new KeyguardStatusViewManager(this, mUpdateMonitor,
-                mLockPatternUtils, mCallback, true);
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            mKeyguardStatusViewManager = new MSimKeyguardStatusViewManager(this, mUpdateMonitor,
+                    mLockPatternUtils, mCallback, true);
+        } else {
+            mKeyguardStatusViewManager = new KeyguardStatusViewManager(this, mUpdateMonitor,
+                    mLockPatternUtils, mCallback, true);
+        }
 
         mLockPatternView = (LockPatternView) findViewById(R.id.lockPattern);
 
@@ -250,10 +257,18 @@ class PatternUnlockScreen extends LinearLayoutWithDefaultTouchRecepient
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (LockPatternKeyguardView.DEBUG_CONFIGURATION) {
-            Log.v(TAG, "***** PATTERN ATTACHED TO WINDOW");
-            Log.v(TAG, "Cur orient=" + mCreationOrientation
-                    + ", new config=" + getResources().getConfiguration());
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            if (MSimLockPatternKeyguardView.DEBUG_CONFIGURATION) {
+                Log.v(TAG, "***** PATTERN ATTACHED TO WINDOW");
+                Log.v(TAG, "Cur orient=" + mCreationOrientation
+                        + ", new config=" + getResources().getConfiguration());
+            }
+        } else {
+            if (LockPatternKeyguardView.DEBUG_CONFIGURATION) {
+                Log.v(TAG, "***** PATTERN ATTACHED TO WINDOW");
+                Log.v(TAG, "Cur orient=" + mCreationOrientation
+                        + ", new config=" + getResources().getConfiguration());
+            }
         }
         if (getResources().getConfiguration().orientation != mCreationOrientation) {
             mCallback.recreateMe(getResources().getConfiguration());

@@ -27,16 +27,23 @@ import android.os.ServiceManager;
 
 import com.android.internal.app.ThemeUtils;
 import com.android.internal.telephony.ITelephony;
+import com.android.internal.telephony.Phone;
 import com.android.internal.widget.LockPatternUtils;
 
+import android.telephony.MSimTelephonyManager;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.view.ViewGroup;
+import android.view.Gravity;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.android.internal.R;
 
 /**
@@ -44,35 +51,37 @@ import com.android.internal.R;
  */
 public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, View.OnClickListener {
 
-    private boolean mSimCheckInProgress;
+    protected boolean mSimCheckInProgress;
 
-    private static final int DIGIT_PRESS_WAKE_MILLIS = 5000;
+    protected static final int DIGIT_PRESS_WAKE_MILLIS = 5000;
 
-    private final KeyguardUpdateMonitor mUpdateMonitor;
-    private final KeyguardScreenCallback mCallback;
+    protected final KeyguardUpdateMonitor mUpdateMonitor;
+    protected final KeyguardScreenCallback mCallback;
 
-    private TextView mHeaderText;
-    private TextView mPinText;
+    protected TextView mHeaderText;
+    protected TextView mPinText;
 
-    private TextView mOkButton;
+    protected TextView mOkButton;
 
-    private View mBackSpaceButton;
+    protected View mBackSpaceButton;
 
-    private final int[] mEnteredPin = {0, 0, 0, 0, 0, 0, 0, 0};
-    private int mEnteredDigits = 0;
+    protected Context mContext;
 
-    private Context mUiContext;
-    private ProgressDialog mSimUnlockProgressDialog = null;
+    protected final int[] mEnteredPin = {0, 0, 0, 0, 0, 0, 0, 0};
+    protected int mEnteredDigits = 0;
 
-    private LockPatternUtils mLockPatternUtils;
+    protected Context mUiContext;
+    protected ProgressDialog mSimUnlockProgressDialog = null;
 
-    private int mCreationOrientation;
+    protected LockPatternUtils mLockPatternUtils;
 
-    private int mKeyboardHidden;
+    protected int mCreationOrientation;
 
-    private KeyguardStatusViewManager mKeyguardStatusViewManager;
+    protected int mKeyboardHidden;
 
-    private static final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    protected KeyguardStatusViewManager mKeyguardStatusViewManager;
+
+    protected static final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     private BroadcastReceiver mThemeChangeReceiver = new BroadcastReceiver() {
         @Override
@@ -88,19 +97,12 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         super(context);
         mUpdateMonitor = updateMonitor;
         mCallback = callback;
+        mContext = context;
 
         mCreationOrientation = configuration.orientation;
         mKeyboardHidden = configuration.hardKeyboardHidden;
         mLockPatternUtils = lockpatternutils;
-
-        LayoutInflater inflater = LayoutInflater.from(context);
-        if (mKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            inflater.inflate(R.layout.keyguard_screen_sim_pin_landscape, this, true);
-        } else {
-            inflater.inflate(R.layout.keyguard_screen_sim_pin_portrait, this, true);
-            new TouchInput();
-        }
-
+        layoutType(context);
         mHeaderText = (TextView) findViewById(R.id.headerText);
         mPinText = (TextView) findViewById(R.id.pinDisplay);
         mBackSpaceButton = findViewById(R.id.backspace);
@@ -113,10 +115,25 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
 
         mOkButton.setOnClickListener(this);
 
-        mKeyguardStatusViewManager = new KeyguardStatusViewManager(this, updateMonitor,
-                lockpatternutils, callback, false);
+        if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
+            mKeyguardStatusViewManager = new MSimKeyguardStatusViewManager(this, updateMonitor,
+                    lockpatternutils, callback, true);
+        } else {
+            mKeyguardStatusViewManager = new KeyguardStatusViewManager(this, updateMonitor,
+                    lockpatternutils, callback, true);
+        }
 
         setFocusableInTouchMode(true);
+    }
+
+    protected void layoutType(Context context) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        if (mKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+            inflater.inflate(R.layout.keyguard_screen_sim_pin_landscape, this, true);
+        } else {
+            inflater.inflate(R.layout.keyguard_screen_sim_pin_portrait, this, true);
+            new TouchInput();
+        }
     }
 
     /** {@inheritDoc} */
@@ -174,13 +191,13 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
             mPin = pin;
         }
 
-        abstract void onSimLockChangedResponse(boolean success);
+        abstract void onSimLockChangedResponse(final int result);
 
         @Override
         public void run() {
             try {
-                final boolean result = ITelephony.Stub.asInterface(ServiceManager
-                        .checkService("phone")).supplyPin(mPin);
+                final int result = ITelephony.Stub.asInterface(ServiceManager
+                        .checkService("phone")).supplyPinReportResult(mPin);
                 post(new Runnable() {
                     public void run() {
                         onSimLockChangedResponse(result);
@@ -189,7 +206,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
             } catch (RemoteException e) {
                 post(new Runnable() {
                     public void run() {
-                        onSimLockChangedResponse(false);
+                        onSimLockChangedResponse(Phone.PIN_GENERAL_FAILURE);
                     }
                 });
             }
@@ -210,7 +227,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         }
     }
 
-    private Dialog getSimUnlockProgressDialog() {
+    protected Dialog getSimUnlockProgressDialog() {
         if (mUiContext == null && mSimUnlockProgressDialog != null) {
             mSimUnlockProgressDialog.dismiss();
             mSimUnlockProgressDialog = null;
@@ -233,7 +250,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         return mSimUnlockProgressDialog;
     }
 
-    private void checkPin() {
+    protected void checkPin() {
 
         // make sure that the pin is at least 4 digits long.
         if (mEnteredDigits < 4) {
@@ -249,20 +266,51 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         getSimUnlockProgressDialog().show();
 
         new CheckSimPin(mPinText.getText().toString()) {
-            void onSimLockChangedResponse(final boolean success) {
+            void onSimLockChangedResponse(final int result) {
                 mPinText.post(new Runnable() {
                     public void run() {
                         mSimCheckInProgress = false;
                         if (mSimUnlockProgressDialog != null) {
                             mSimUnlockProgressDialog.hide();
                         }
-                        if (success) {
+                        if (result == Phone.PIN_RESULT_SUCCESS) {
+                            //Display message to user that the PIN1 entered is accepted.
+                            LayoutInflater inflater = LayoutInflater.from(mUiContext);
+                            View layout = inflater.inflate(R.layout.transient_notification,
+                            (ViewGroup) findViewById(R.id.toast_layout_root));
+
+                            TextView text = (TextView) layout.findViewById(R.id.message);
+                            text.setText(R.string.keyguard_pin_accepted);
+
+                            Toast toast = new Toast(mUiContext);
+                            toast.setDuration(Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                            toast.setView(layout);
+                            toast.show();
+
                             // before closing the keyguard, report back that
                             // the sim is unlocked so it knows right away
                             mUpdateMonitor.reportSimUnlocked();
                             mCallback.goToUnlockScreen();
                         } else {
-                            mHeaderText.setText(R.string.keyguard_password_wrong_pin_code);
+                            if (result == Phone.PIN_PASSWORD_INCORRECT) {
+                                try {
+                                    //Displays No. of attempts remaining to unlock PIN1 in case of wrong entry.
+                                    int attemptsRemaining = ITelephony.Stub.asInterface(ServiceManager
+                                            .checkService("phone")).getIccPin1RetryCount();
+                                    if (attemptsRemaining >= 0) {
+                                        String displayMessage = getContext().getString(R.string.keyguard_password_wrong_pin_code)
+                                                + getContext().getString(R.string.pinpuk_attempts) + attemptsRemaining;
+                                        mHeaderText.setText(displayMessage);
+                                    } else {
+                                        mHeaderText.setText(R.string.keyguard_password_wrong_pin_code);
+                                    }
+                                } catch (RemoteException ex) {
+                                    mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                                }
+                            } else {
+                                mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                            }
                             mPinText.setText("");
                             mEnteredDigits = 0;
                         }
@@ -273,7 +321,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         }.start();
     }
 
-    @Override
+
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             mCallback.goToLockScreen();
@@ -317,7 +365,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         return false;
     }
 
-    private void reportDigit(int digit) {
+    protected void reportDigit(int digit) {
         if (mEnteredDigits == 0) {
             mPinText.setText("");
         }
@@ -354,20 +402,20 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
      * Helper class to handle input from touch dialer.  Only relevant when
      * the keyboard is shut.
      */
-    private class TouchInput implements View.OnClickListener {
-        private TextView mZero;
-        private TextView mOne;
-        private TextView mTwo;
-        private TextView mThree;
-        private TextView mFour;
-        private TextView mFive;
-        private TextView mSix;
-        private TextView mSeven;
-        private TextView mEight;
-        private TextView mNine;
-        private TextView mCancelButton;
+    protected class TouchInput implements View.OnClickListener {
+        protected TextView mZero;
+        protected TextView mOne;
+        protected TextView mTwo;
+        protected TextView mThree;
+        protected TextView mFour;
+        protected TextView mFive;
+        protected TextView mSix;
+        protected TextView mSeven;
+        protected TextView mEight;
+        protected TextView mNine;
+        protected TextView mCancelButton;
 
-        private TouchInput() {
+        protected TouchInput() {
             mZero = (TextView) findViewById(R.id.zero);
             mOne = (TextView) findViewById(R.id.one);
             mTwo = (TextView) findViewById(R.id.two);
@@ -419,7 +467,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
             }
         }
 
-        private int checkDigit(View v) {
+        protected int checkDigit(View v) {
             int digit = -1;
             if (v == mZero) {
                 digit = 0;

@@ -43,6 +43,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.provider.Settings;
+import android.telephony.MSimTelephonyManager;
 import android.telephony.TelephonyManager;
 import android.util.EventLog;
 import android.util.Log;
@@ -652,11 +653,15 @@ public class KeyguardViewMediator implements KeyguardViewCallback,
         final boolean requireSim = !SystemProperties.getBoolean("keyguard.no_require_sim",
                 false);
         final boolean provisioned = mUpdateMonitor.isDeviceProvisioned();
-        final IccCard.State state = mUpdateMonitor.getSimState();
-        final boolean lockedOrMissing = state.isPinLocked()
-                || ((state == IccCard.State.ABSENT
-                || state == IccCard.State.PERM_DISABLED)
-                && requireSim);
+        final IccCard.State[] state;
+        int numPhones = MSimTelephonyManager.getDefault().getPhoneCount();
+        state = new IccCard.State[numPhones];
+        boolean lockedOrMissing = false;
+        for (int i = 0; i < numPhones; i++) {
+            state[i] = mUpdateMonitor.getSimState(i);
+            lockedOrMissing = lockedOrMissing || isLockedOrMissing(state[i]);
+            if (lockedOrMissing) break;
+        }
 
         if (!lockedOrMissing && !provisioned) {
             if (DEBUG) Log.d(TAG, "doKeyguard: not showing because device isn't provisioned"
@@ -681,6 +686,13 @@ public class KeyguardViewMediator implements KeyguardViewCallback,
 
         if (DEBUG) Log.d(TAG, "doKeyguard: showing the lock screen");
         showLocked();
+    }
+
+    boolean isLockedOrMissing(IccCard.State state) {
+        final boolean requireSim = !SystemProperties.getBoolean("keyguard.no_require_sim",
+                false);
+        return (state.isPinLocked() || ((state == IccCard.State.ABSENT ||
+                state == IccCard.State.PERM_DISABLED) && requireSim));
     }
 
     /**
@@ -769,6 +781,11 @@ public class KeyguardViewMediator implements KeyguardViewCallback,
 
     /** {@inheritDoc} */
     public void onSimStateChanged(IccCard.State simState) {
+        onSimStateChanged(simState, MSimTelephonyManager.getDefault().getDefaultSubscription());
+    }
+
+    /** {@inheritDoc} */
+    public void onSimStateChanged(IccCard.State simState, int subscription) {
         if (DEBUG) Log.d(TAG, "onSimStateChanged: " + simState);
 
         switch (simState) {
