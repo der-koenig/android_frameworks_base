@@ -105,6 +105,8 @@ public class CallerInfo {
     public Uri contactRingtoneUri;
     public boolean shouldSendToVoicemail;
 
+    public int subscription;
+
     /**
      * Drawable representing the caller image.  This is essentially
      * a cache for the image data tied into the connection /
@@ -163,6 +165,7 @@ public class CallerInfo {
         info.cachedPhoto = null;
         info.isCachedPhotoCurrent = false;
         info.contactExists = false;
+        info.subscription = -1;
 
         if (VDBG) Log.v(TAG, "getCallerInfo() based on cursor...");
 
@@ -610,6 +613,7 @@ public class CallerInfo {
                     .append("\nemergency: " + mIsEmergency)
                     .append("\nvoicemail " + mIsVoiceMail)
                     .append("\ncontactExists " + contactExists)
+                    .append("\nsubscription " + subscription)
                     .append(" }")
                     .toString();
         } else {
