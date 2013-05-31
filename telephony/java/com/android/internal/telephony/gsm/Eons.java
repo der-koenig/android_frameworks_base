@@ -171,6 +171,25 @@ public final class Eons {
         return needsOperatorNameUpdate;
     }
 
+    public OperatorInfo getEonsForOperator(OperatorInfo operator) {
+        int pnnRecord = 0;
+        String pnnName = null;
+       
+        // Get EONS for this operator from OPL/PNN data.
+        pnnRecord = mOplRecords.getMatchingPnnRecord(operator.getOperatorNumeric(), -1, false);
+        pnnName = mPnnRecords.getNameFromPnnRecord(pnnRecord, false);
+        if (DBG) log("PLMN = " + operator.getOperatorNumeric() + ", ME Name = "
+          + operator.getOperatorAlphaLong() + ", PNN Name = " + pnnName);
+        // EONS could not be derived for this operator. Use the
+        // same name in the list.
+        if (pnnName == null) {
+            pnnName = operator.getOperatorAlphaLong();
+        }
+
+        return new OperatorInfo(pnnName,operator.getOperatorAlphaShort(),
+                operator.getOperatorNumeric(),operator.getState(),operator.getOperatorRat());
+    }
+
     /**
      * Fetch EONS for Available Networks from EF_PNN data.
      * @param avlNetworks, ArrayList of Available Networks
@@ -190,23 +209,7 @@ public final class Eons {
             eonsNetworkNames = new ArrayList<OperatorInfo>(size);
             if (DBG) log("Available Networks List Size = " + size);
             for (int i = 0; i < size; i++) {
-                 int pnnRecord = 0;
-                 String pnnName = null;
-                 OperatorInfo ni;
-
-                 ni = avlNetworks.get(i);
-                 // Get EONS for this operator from OPL/PNN data.
-                 pnnRecord = mOplRecords.getMatchingPnnRecord(ni.getOperatorNumeric(), -1, false);
-                 pnnName = mPnnRecords.getNameFromPnnRecord(pnnRecord, false);
-                 if (DBG) log("PLMN = " + ni.getOperatorNumeric() + ", ME Name = "
-                   + ni.getOperatorAlphaLong() + ", PNN Name = " + pnnName);
-                 // EONS could not be derived for this operator. Use the
-                 // same name in the list.
-                 if (pnnName == null) {
-                     pnnName = ni.getOperatorAlphaLong();
-                 }
-                 eonsNetworkNames.add (new OperatorInfo(pnnName,ni.getOperatorAlphaShort(),
-                        ni.getOperatorNumeric(),ni.getState()));
+                eonsNetworkNames.add(getEonsForOperator(avlNetworks.get(i)));
             }
         } else {
             loge("Available Networks List is empty");

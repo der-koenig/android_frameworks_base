@@ -318,4 +318,34 @@ public class MSimGSMPhone extends GSMPhone {
     public void unregisterForAllDataDisconnected(Handler h) {
         ((MSimGsmDataConnectionTracker)mDataConnectionTracker).unregisterForAllDataDisconnected(h);
     }
+
+    @Override
+    protected String getSavedNetworkSelection() {
+        // open the shared preferences and search with our key.
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        if(mSubscription > 0)
+            return sp.getString(NETWORK_SELECTION_KEY + mSubscription, "");
+
+        return sp.getString(NETWORK_SELECTION_KEY, "");
+    }
+
+    @Override
+    protected void saveManualNetworkSelection(String operatorNumeric, String operatorAlphaLong) {
+        // open the shared preferences editor, and write the value.
+        // nsm.operatorNumeric is "" if we're in automatic.selection.
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = sp.edit();
+        if(mSubscription > 0) {
+            editor.putString(NETWORK_SELECTION_KEY + mSubscription, operatorNumeric);
+            editor.putString(NETWORK_SELECTION_NAME_KEY + mSubscription, operatorAlphaLong);
+        } else {
+            editor.putString(NETWORK_SELECTION_KEY, operatorNumeric);
+            editor.putString(NETWORK_SELECTION_NAME_KEY, operatorAlphaLong);
+        }
+
+        // commit and log the result.
+        if (! editor.commit()) {
+            Log.e(LOG_TAG, "failed to commit network selection preference");
+        }
+    }
 }

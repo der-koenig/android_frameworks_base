@@ -145,7 +145,7 @@ public class MSimSimUnlockScreen extends SimUnlockScreen implements KeyguardScre
         // make sure that the pin is at least 4 digits long.
         if (mEnteredDigits < 4) {
             // otherwise, display a message to the user, and don't submit.
-            mHeaderText.setText(R.string.invalidPin);
+            mCarrierView.setText(R.string.invalidPin);
             mPinText.setText("");
             mEnteredDigits = 0;
             mCallback.pokeWakelock();
@@ -195,16 +195,16 @@ public class MSimSimUnlockScreen extends SimUnlockScreen implements KeyguardScre
                                                 R.string.keyguard_password_wrong_pin_code)
                                                 + getContext().getString(R.string.pinpuk_attempts)
                                                 + attemptsRemaining;
-                                        mHeaderText.setText(displayMessage);
+                                        mCarrierView.setText(displayMessage);
                                     } else {
-                                        mHeaderText.setText(
+                                        mCarrierView.setText(
                                                 R.string.keyguard_password_wrong_pin_code);
                                     }
                                 } catch (RemoteException ex) {
-                                    mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                                    mCarrierView.setText(R.string.keyguard_password_pin_failed);
                                 }
                             } else {
-                                mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                                mCarrierView.setText(R.string.keyguard_password_pin_failed);
                             }
                             mPinText.setText("");
                             mEnteredDigits = 0;

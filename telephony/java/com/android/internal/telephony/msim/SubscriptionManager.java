@@ -1332,6 +1332,7 @@ public class SubscriptionManager extends Handler {
      */
     public boolean setSubscription(SubscriptionData subData) {
         boolean ret = false;
+        boolean subscriptionChangeRequested = false;
 
         // Return failure if the set uicc subscription is already in progress.
         // Ideally the setSubscription should not be called when there is a
@@ -1359,6 +1360,7 @@ public class SubscriptionManager extends Handler {
                     newSub.copyFrom(getCurrentSubscription(subId));
                     newSub.subStatus = SubscriptionStatus.SUB_DEACTIVATE;
                     mDeactivatePending.put(subId, newSub);
+                    subscriptionChangeRequested = true;
                 } else if (getCurrentSubscriptionStatus(subId) == SubscriptionStatus.SUB_DEACTIVATED
                         && subData.subscription[subId.ordinal()].subStatus ==
                         SubscriptionStatus.SUB_DEACTIVATE) {
@@ -1371,7 +1373,12 @@ public class SubscriptionManager extends Handler {
                 Subscription newSub = new Subscription();
                 newSub.copyFrom(subData.subscription[subId.ordinal()]);
                 mActivatePending.put(subId, newSub);
+                subscriptionChangeRequested = true;
             }
+        }
+
+        if (!subscriptionChangeRequested) {
+            return true;
         }
 
         // Start the set uicc subscription only if

@@ -90,14 +90,12 @@ class MSimKeyguardStatusViewManager extends KeyguardStatusViewManager {
     }
 
     void setCarrierText() {
-        if (MSimTelephonyManager.MultiSimVariants.TSTS ==
-                MSimTelephonyManager.getDefault().getMultiSimConfiguration()) {
-            mCarrierText = mCarrierTextSub[MSimConstants.SUB3] + " , " +
-                    mCarrierTextSub[MSimConstants.SUB2] + " , " +
-                    mCarrierTextSub[MSimConstants.SUB1];
-        } else {
-            mCarrierText = mCarrierTextSub[MSimConstants.SUB2] + " , " +
-                    mCarrierTextSub[MSimConstants.SUB1];
+        mCarrierText = "";
+        for(int i = 0; i < mNumPhones; i++) {
+            if(MSimTelephonyManager.getDefault().isSubActive(i)) {
+                if(!mCarrierText.equals("")) mCarrierText = mCarrierText.toString() + " / ";
+                mCarrierText = mCarrierText.toString() + mCarrierTextSub[i];
+            }
         }
         update(CARRIER_TEXT, mCarrierText);
     }

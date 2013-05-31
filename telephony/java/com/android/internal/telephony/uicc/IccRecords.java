@@ -24,6 +24,7 @@ import android.os.Registrant;
 import android.os.RegistrantList;
 
 import com.android.internal.telephony.CommandsInterface;
+import com.android.internal.telephony.OperatorInfo;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -394,6 +395,10 @@ public abstract class IccRecords extends Handler implements IccConstants {
      * GSM/UMTS and the like SIMS
      */
     public String getOperatorNumeric() {
+        return null;
+    }
+
+    public OperatorInfo getOperator() {
         return null;
     }
 

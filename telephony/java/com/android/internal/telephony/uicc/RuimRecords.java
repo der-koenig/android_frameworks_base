@@ -39,6 +39,7 @@ import com.android.internal.telephony.GsmAlphabet;
 import com.android.internal.telephony.PhoneBase;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.telephony.MccTable;
+import com.android.internal.telephony.OperatorInfo;
 
 // can't be used since VoiceMailConstants is not public
 //import com.android.internal.telephony.gsm.VoiceMailConstants;
@@ -255,6 +256,11 @@ public final class RuimRecords extends IccRecords {
 
         int mcc = Integer.parseInt(mImsi.substring(0,3));
         return mImsi.substring(0, 3 + MccTable.smallestDigitsMccForMnc(mcc));
+    }
+
+    @Override 
+    public OperatorInfo getOperator() {
+        return null;
     }
 
     // Refer to ETSI TS 102.221

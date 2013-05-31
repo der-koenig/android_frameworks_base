@@ -525,7 +525,7 @@ public abstract class PhoneBase extends Handler implements Phone {
     /**
      * Method to retrieve the saved operator id from the Shared Preferences
      */
-    private String getSavedNetworkSelection() {
+    protected String getSavedNetworkSelection() {
         // open the shared preferences and search with our key.
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
         return sp.getString(NETWORK_SELECTION_KEY, "");

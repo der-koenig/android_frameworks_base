@@ -840,10 +840,22 @@ public class MSimNetworkController extends NetworkController {
             // Otherwise (nothing connected) we show "No internet connection".
 
             if (mMSimDataConnected[subscription]) {
-                mobileLabel = mMSimNetworkName[subscription];
+                for(int i = 0; i < mMSimNetworkName.length; i++) {
+                    if(MSimTelephonyManager.getDefault().isSubActive(i)) {
+                        if(!mobileLabel.equals(""))
+                            mobileLabel += " / ";
+                        mobileLabel += mMSimNetworkName[i];
+                    }
+                }
             } else if (mConnected || emergencyOnly) {
                 if (hasService(subscription) || emergencyOnly) {
-                    mobileLabel = mMSimNetworkName[subscription];
+                    for(int i = 0; i < mMSimNetworkName.length; i++) {
+                        if(MSimTelephonyManager.getDefault().isSubActive(i)) {
+                            if(!mobileLabel.equals(""))
+                                mobileLabel += " / ";
+                            mobileLabel += mMSimNetworkName[i];
+                        }
+                    }
                 } else {
                     mobileLabel = "";
                 }

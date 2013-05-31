@@ -21,11 +21,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.provider.Telephony;
+import android.telephony.MSimTelephonyManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Slog;
 import android.view.View;
 import android.widget.TextView;
+
+import static com.android.internal.telephony.MSimConstants.SUBSCRIPTION_KEY;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -39,6 +42,8 @@ import com.android.internal.R;
  */
 public class CarrierLabel extends TextView {
     private boolean mAttached;
+    private int mNumPhones = MSimTelephonyManager.getDefault().getPhoneCount();
+    private String[] mText = new String[mNumPhones];
 
     public CarrierLabel(Context context) {
         this(context, null);
@@ -50,7 +55,7 @@ public class CarrierLabel extends TextView {
 
     public CarrierLabel(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        updateNetworkName(false, null, false, null);
+        updateNetworkName(false, null, false, null, 0);
     }
 
     @Override
@@ -82,15 +87,17 @@ public class CarrierLabel extends TextView {
                 updateNetworkName(intent.getBooleanExtra(Telephony.Intents.EXTRA_SHOW_SPN, false),
                         intent.getStringExtra(Telephony.Intents.EXTRA_SPN),
                         intent.getBooleanExtra(Telephony.Intents.EXTRA_SHOW_PLMN, false),
-                        intent.getStringExtra(Telephony.Intents.EXTRA_PLMN));
+                        intent.getStringExtra(Telephony.Intents.EXTRA_PLMN),
+                        intent.getIntExtra(SUBSCRIPTION_KEY, 0));
             }
         }
     };
 
-    void updateNetworkName(boolean showSpn, String spn, boolean showPlmn, String plmn) {
+    void updateNetworkName(boolean showSpn, String spn, boolean showPlmn, String plmn,
+            int subscription) {
         if (false) {
             Slog.d("CarrierLabel", "updateNetworkName showSpn=" + showSpn + " spn=" + spn
-                    + " showPlmn=" + showPlmn + " plmn=" + plmn);
+                    + " showPlmn=" + showPlmn + " plmn=" + plmn + " subscription=" + subscription);
         }
         final String str;
         // match logic in KeyguardStatusViewManager
@@ -105,7 +112,16 @@ public class CarrierLabel extends TextView {
         } else {
             str = "";
         }
-        setText(str);
+        mText[subscription] = str;
+
+        String str2 = "";
+        for(int i = 0; i < mNumPhones; i++) {
+            if(MSimTelephonyManager.getDefault().isSubActive(i)) {
+                if(!str2.equals("")) str2 += " / ";
+                str2 += str;
+            }
+        }
+        setText(str2);
     }
 
     

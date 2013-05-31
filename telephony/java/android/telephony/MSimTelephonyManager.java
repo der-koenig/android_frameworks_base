@@ -411,6 +411,39 @@ public class MSimTelephonyManager {
     }
 
     /**
+     * Returns the MCC+MNC (mobile country code + mobile network code) of the
+     * provider of the SIM. 5 or 6 decimal digits.
+     * <p>
+     * Availability: SIM state must be {@link #SIM_STATE_READY}
+     *
+     * @see #getSimState
+     */
+    public String getSimOperator(int subscription) {
+        return getTelephonyProperty(TelephonyProperties.PROPERTY_ICC_OPERATOR_NUMERIC,
+                subscription, "");
+    }
+
+    /**
+     * Returns the Service Provider Name (SPN).
+     * <p>
+     * Availability: SIM state must be {@link #SIM_STATE_READY}
+     *
+     * @see #getSimState
+     */
+    public String getSimOperatorName(int subscription) {
+        return getTelephonyProperty(TelephonyProperties.PROPERTY_ICC_OPERATOR_ALPHA,
+                subscription, "");
+    }
+
+    /**
+     * Returns the ISO country code equivalent for the SIM provider's country code.
+     */
+    public String getSimCountryIso(int subscription) {
+        return getTelephonyProperty(TelephonyProperties.PROPERTY_ICC_OPERATOR_ISO_COUNTRY,
+                subscription, "");
+    }
+
+    /**
      * Return if the current radio is LTE on CDMA. This
      * is a tri-state return value as for a period of time
      * the mode may be unknown.

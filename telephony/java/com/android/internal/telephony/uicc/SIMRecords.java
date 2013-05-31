@@ -580,6 +580,19 @@ public class SIMRecords extends IccRecords {
         return imsi.substring(0, 3 + mncLength);
     }
 
+    @Override
+    public OperatorInfo getOperator() {
+        String numeric = getOperatorNumeric();
+        OperatorInfo operator = null;
+
+        if(numeric != null) {
+            operator = new OperatorInfo(null, null, numeric, "unknown");
+            if(mEonsEnabled) operator = mEons.getEonsForOperator(operator);
+        }
+
+        return operator;
+    }
+
     /** Returns the country code associated with the SIM
      * i.e the first 3 digits of IMSI.
      */
@@ -1427,14 +1440,16 @@ public class SIMRecords extends IccRecords {
     }
 
     protected void onAllRecordsLoaded() {
-        String operator = getOperatorNumeric();
+        OperatorInfo operator = getOperator();
+        String numeric = operator.getOperatorNumeric();
 
         // Some fields require more than one SIM record to set
 
         log("SIMRecords: onAllRecordsLoaded set 'gsm.sim.operator.numeric' to operator='" +
-                operator + "'");
-        setSystemProperty(PROPERTY_ICC_OPERATOR_NUMERIC, operator);
-        setSystemProperty(PROPERTY_APN_SIM_OPERATOR_NUMERIC, operator);
+                numeric + "'");
+        setSystemProperty(PROPERTY_ICC_OPERATOR_NUMERIC, numeric);
+        setSystemProperty(PROPERTY_ICC_OPERATOR_ALPHA, operator.getOperatorAlphaLong());
+        setSystemProperty(PROPERTY_APN_SIM_OPERATOR_NUMERIC, numeric);
 
         if (imsi != null) {
             setSystemProperty(PROPERTY_ICC_OPERATOR_ISO_COUNTRY,
@@ -1444,8 +1459,8 @@ public class SIMRecords extends IccRecords {
             loge("onAllRecordsLoaded: imsi is NULL!");
         }
 
-        setVoiceMailByCountry(operator);
-        setSpnFromConfig(operator);
+        setVoiceMailByCountry(numeric);
+        setSpnFromConfig(numeric);
 
         recordsLoadedRegistrants.notifyRegistrants(
             new AsyncResult(null, null, null));

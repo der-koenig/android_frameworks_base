@@ -41,6 +41,7 @@ import android.telephony.MSimTelephonyManager;
 import com.android.internal.telephony.CommandsInterface;
 import com.android.internal.telephony.MccTable;
 import com.android.internal.telephony.MSimConstants;
+import com.android.internal.telephony.OperatorInfo;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.uicc.IccCardProxy;
@@ -105,19 +106,26 @@ public class MSimIccCardProxy extends IccCardProxy {
 
             case EVENT_RECORDS_LOADED:
                 if (mIccRecords != null) {
-                    String operator = mIccRecords.getOperatorNumeric();
+                    String numeric = null;
+
+                    OperatorInfo operator = mIccRecords.getOperator();
+                    if(operator != null)
+                        numeric = operator.getOperatorNumeric();
+
                     int sub = (mSubscriptionData != null) ? mSubscriptionData.subId : 0;
 
-                    log("operator = " + operator + " SUB = " + sub);
+                    log("operator = " + numeric + " SUB = " + sub);
 
                     if (operator != null) {
                         MSimTelephonyManager.setTelephonyProperty(
-                                PROPERTY_ICC_OPERATOR_NUMERIC, sub, operator);
+                                PROPERTY_ICC_OPERATOR_NUMERIC, sub, numeric);
+                        MSimTelephonyManager.setTelephonyProperty(
+                                PROPERTY_ICC_OPERATOR_ALPHA, sub, operator.getOperatorAlphaLong());
                         if (mCurrentAppType == UiccController.APP_FAM_3GPP) {
                             MSimTelephonyManager.setTelephonyProperty(
-                                    PROPERTY_APN_SIM_OPERATOR_NUMERIC, sub, operator);
+                                    PROPERTY_APN_SIM_OPERATOR_NUMERIC, sub, numeric);
                         }
-                        String countryCode = operator.substring(0,3);
+                        String countryCode = numeric.substring(0,3);
                         if (countryCode != null) {
                             MSimTelephonyManager.setTelephonyProperty(
                                     PROPERTY_ICC_OPERATOR_ISO_COUNTRY, sub,

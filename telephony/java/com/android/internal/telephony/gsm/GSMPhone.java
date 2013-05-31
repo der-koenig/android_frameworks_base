@@ -133,6 +133,8 @@ public class GSMPhone extends PhoneBase {
 
     protected String mImei;
     protected String mImeiSv;
+    private boolean mIsManualNetworkSelection = false;
+    private String mManualNetworkSelectionRat = "";
     private String mVmNumber;
     private String mSetCfNumber;
 
@@ -1079,6 +1081,8 @@ public class GSMPhone extends PhoneBase {
 
         // get the message
         Message msg = obtainMessage(EVENT_SET_NETWORK_AUTOMATIC_COMPLETE, nsm);
+        mIsManualNetworkSelection = false;
+        mManualNetworkSelectionRat = "";
         if (LOCAL_DEBUG)
             Log.d(LOG_TAG, "wrapping and sending message to connect automatically");
 
@@ -1098,7 +1102,15 @@ public class GSMPhone extends PhoneBase {
         // get the message
         Message msg = obtainMessage(EVENT_SET_NETWORK_MANUAL_COMPLETE, nsm);
 
-        mCM.setNetworkSelectionModeManual(network.getOperatorNumeric(), msg);
+        mIsManualNetworkSelection = true;
+        mManualNetworkSelectionRat = "";
+        if(network.getOperatorRat().equals("WCDMA")) {
+            mManualNetworkSelectionRat = "RAT3";
+        } else if(network.getOperatorRat().equals("GSM")) {
+            mManualNetworkSelectionRat = "RAT2";
+        }
+        mCM.setNetworkSelectionModeManual(mManualNetworkSelectionRat + 
+                network.getOperatorNumeric(), msg);
     }
 
     public void
@@ -1589,6 +1601,11 @@ public class GSMPhone extends PhoneBase {
             return;
         }
 
+        if(ar.exception == null) {
+            Log.d(LOG_TAG, "setIsManualSelection to " + mIsManualNetworkSelection);
+            mSST.ss.setIsManualSelection(mIsManualNetworkSelection);
+        }
+
         NetworkSelectMessage nsm = (NetworkSelectMessage) ar.userObj;
 
         // found the object, now we send off the message we had originally
@@ -1599,18 +1616,22 @@ public class GSMPhone extends PhoneBase {
             nsm.message.sendToTarget();
         }
 
+        saveManualNetworkSelection(mManualNetworkSelectionRat + nsm.operatorNumeric,
+            nsm.operatorAlphaLong);
+    }
+
+    protected void saveManualNetworkSelection(String operatorNumeric, String operatorAlphaLong) {
         // open the shared preferences editor, and write the value.
         // nsm.operatorNumeric is "" if we're in automatic.selection.
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString(NETWORK_SELECTION_KEY, nsm.operatorNumeric);
-        editor.putString(NETWORK_SELECTION_NAME_KEY, nsm.operatorAlphaLong);
+        editor.putString(NETWORK_SELECTION_KEY, operatorNumeric);
+        editor.putString(NETWORK_SELECTION_NAME_KEY, operatorAlphaLong);
 
         // commit and log the result.
         if (! editor.commit()) {
             Log.e(LOG_TAG, "failed to commit network selection preference");
         }
-
     }
 
     /**

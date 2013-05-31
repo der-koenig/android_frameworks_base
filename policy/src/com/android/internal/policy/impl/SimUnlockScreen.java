@@ -60,6 +60,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
 
     protected TextView mHeaderText;
     protected TextView mPinText;
+    protected TextView mCarrierView;
 
     protected TextView mOkButton;
 
@@ -104,6 +105,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         mLockPatternUtils = lockpatternutils;
         layoutType(context);
         mHeaderText = (TextView) findViewById(R.id.headerText);
+        mCarrierView = (TextView) findViewById(R.id.carrier);
         mPinText = (TextView) findViewById(R.id.pinDisplay);
         mBackSpaceButton = findViewById(R.id.backspace);
         mBackSpaceButton.setOnClickListener(this);
@@ -255,7 +257,7 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
         // make sure that the pin is at least 4 digits long.
         if (mEnteredDigits < 4) {
             // otherwise, display a message to the user, and don't submit.
-            mHeaderText.setText(R.string.invalidPin);
+            mCarrierView.setText(R.string.invalidPin);
             mPinText.setText("");
             mEnteredDigits = 0;
             mCallback.pokeWakelock();
@@ -301,15 +303,15 @@ public class SimUnlockScreen extends LinearLayout implements KeyguardScreen, Vie
                                     if (attemptsRemaining >= 0) {
                                         String displayMessage = getContext().getString(R.string.keyguard_password_wrong_pin_code)
                                                 + getContext().getString(R.string.pinpuk_attempts) + attemptsRemaining;
-                                        mHeaderText.setText(displayMessage);
+                                        mCarrierView.setText(displayMessage);
                                     } else {
-                                        mHeaderText.setText(R.string.keyguard_password_wrong_pin_code);
+                                        mCarrierView.setText(R.string.keyguard_password_wrong_pin_code);
                                     }
                                 } catch (RemoteException ex) {
-                                    mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                                    mCarrierView.setText(R.string.keyguard_password_pin_failed);
                                 }
                             } else {
-                                mHeaderText.setText(R.string.keyguard_password_pin_failed);
+                                mCarrierView.setText(R.string.keyguard_password_pin_failed);
                             }
                             mPinText.setText("");
                             mEnteredDigits = 0;

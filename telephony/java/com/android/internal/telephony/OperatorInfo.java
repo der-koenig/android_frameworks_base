@@ -82,18 +82,20 @@ public class OperatorInfo implements Parcelable {
                 State state,
                 String operatorRat) {
 
-        if((operatorAlphaLong == null || operatorAlphaLong.equals("Unknown"))
-           && (operatorAlphaShort == null || operatorAlphaShort.equals("Unknown"))) {
+        this.operatorAlphaLong = operatorAlphaLong;
+        this.operatorAlphaShort = operatorAlphaShort;
+        if((this.operatorAlphaLong == null || this.operatorAlphaLong.equals("Unknown"))
+           && (this.operatorAlphaShort == null || this.operatorAlphaShort.equals("Unknown"))) {
             String[] operatorNames = getOperatorNamesFromConfig(operatorNumeric);
             if(operatorNames != null) {
                 this.operatorAlphaLong = operatorNames[0];
                 this.operatorAlphaShort = operatorNames[1];
             }
         }
-        if(this.operatorAlphaLong == null)
+        if(this.operatorAlphaLong == null && this.operatorAlphaShort == null) {
             this.operatorAlphaLong = operatorNumeric;
-        if(this.operatorAlphaShort == null)
             this.operatorAlphaShort = operatorNumeric;
+        }
         this.operatorNumeric = operatorNumeric;
         this.operatorRat = operatorRat;
 
@@ -178,7 +180,7 @@ public class OperatorInfo implements Parcelable {
         dest.writeString(operatorAlphaShort);
         dest.writeString(operatorNumeric);
         dest.writeSerializable(state);
-        dest.writeSerializable(operatorRat);
+        dest.writeString(operatorRat);
     }
 
     /**
