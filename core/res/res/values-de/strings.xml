@@ -67,6 +67,8 @@
     <string name="invalidPuk" msgid="8761456210898036513">"Geben Sie eine mindestens achtstellige PUK ein."</string>
     <string name="needPuk" msgid="919668385956251611">"Ihre SIM-Karte ist mit einem PUK gesperrt. Geben Sie zum Entsperren den PUK-Code ein."</string>
     <string name="needPuk2" msgid="4526033371987193070">"Geben Sie zum Entsperren der SIM-Karte den PUK2 ein."</string>
+    <string name="enablePin">Fehlgeschlagen. SIM/RUIM-Sperre aktivieren.</string>
+    <string name="pinpuk_attempts">\nVerbleibende Versuche: </string>
     <string name="imei" msgid="2625429890869005782">"IMEI"</string>
     <string name="meid" msgid="4841221237681254195">"MEID"</string>
     <string name="ClipMmi" msgid="6952821216480289285">"Anrufer-ID für eingehenden Anruf"</string>
@@ -757,12 +759,19 @@
     <string name="sipAddressTypeOther" msgid="4408436162950119849">"Sonstige"</string>
     <string name="keyguard_password_enter_pin_code" msgid="3037685796058495017">"PIN-Code eingeben"</string>
     <string name="keyguard_password_enter_puk_code" msgid="4800725266925845333">"PUK und neuen PIN-Code eingeben"</string>
+    <string name="keyguard_password_enter_pin_code_for_subscription">PIN-Code für SIM <xliff:g id="subscription">%d</xliff:g> eingeben</string>
+    <string name="keyguard_password_enter_puk_code_for_subscription">PUK und neuen PIN für SIM <xliff:g id="subscription">%d</xliff:g> eingeben</string>
     <string name="keyguard_password_enter_puk_prompt" msgid="1341112146710087048">"PUK-Code"</string>
     <string name="keyguard_password_enter_pin_prompt" msgid="8027680321614196258">"Neuer PIN-Code"</string>
     <string name="keyguard_password_entry_touch_hint" msgid="7858547464982981384"><font size="17">"Zur Passworteingabe berühren"</font></string>
     <string name="keyguard_password_enter_password_code" msgid="1054721668279049780">"Passwort zum Entsperren eingeben"</string>
     <string name="keyguard_password_enter_pin_password_code" msgid="6391755146112503443">"PIN zum Entsperren eingeben"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="2422225591006134936">"Falscher PIN-Code"</string>
+    <string name="keyguard_password_wrong_puk_code">Falscher PUK-Code!</string>
+    <string name="keyguard_password_pin_failed">PIN-Eingabe fehlgeschlagen!</string>
+    <string name="keyguard_password_puk_failed">PUK-Eingabe fehlgeschlagen!</string>
+    <string name="keyguard_pin_accepted">Code angenommen</string>
+
     <string name="keyguard_label_text" msgid="861796461028298424">"Drücken Sie zum Entsperren die Menütaste und dann auf \"0\"."</string>
     <string name="emergency_call_dialog_number_for_display" msgid="696192103195090970">"Notrufnummer"</string>
     <string name="lockscreen_carrier_default" msgid="8963839242565653192">"Kein Dienst"</string>
@@ -794,6 +803,8 @@
     <string name="lockscreen_transport_play_description" msgid="5888422938351019426">"Schaltfläche für Wiedergabe"</string>
     <string name="lockscreen_transport_stop_description" msgid="4562318378766987601">"Schaltfläche für Stopp"</string>
     <string name="emergency_calls_only" msgid="6733978304386365407">"Nur Notrufe"</string>
+    <string name="lockscreen_sim_error_message_short">Kartenfehler.</string>
+    <string name="lockscreen_sim_error_message">SIM-Karte ist fehlerhaft.</string>
     <string name="lockscreen_network_locked_message" msgid="143389224986028501">"Netzwerk gesperrt"</string>
     <string name="lockscreen_sim_puk_locked_message" msgid="7441797339976230">"PUK-Sperre auf SIM"</string>
     <string name="lockscreen_sim_puk_locked_instructions" msgid="8127916255245181063">"Weitere Informationen erhalten Sie im Nutzerhandbuch oder beim Kundendienst."</string>
@@ -801,6 +812,8 @@
     <string name="lockscreen_sim_unlock_progress_dialog_message" msgid="595323214052881264">"SIM-Karte wird entsperrt..."</string>
     <string name="lockscreen_too_many_failed_attempts_dialog_message" msgid="6481623830344107222">"Sie haben Ihr Entsperrungsmuster <xliff:g id="NUMBER_0">%d</xliff:g>-mal falsch gezeichnet. "\n\n"Bitte versuchen Sie es in <xliff:g id="NUMBER_1">%d</xliff:g> Sekunden noch einmal."</string>
     <string name="lockscreen_too_many_failed_password_attempts_dialog_message" msgid="2725973286239344555">"Sie haben Ihr Passwort <xliff:g id="NUMBER_0">%d</xliff:g>-mal falsch eingegeben."\n\n"Bitte versuchen Sie es in <xliff:g id="NUMBER_1">%d</xliff:g> Sekunden noch einmal."</string>
+    <string name="lockscreen_sim_pin_blocked">PIN1 gesperrt! PUK1-Eingabe erforderlich.</string>
+    <string name="lockscreen_ruim_pin_blocked">PIN1 gesperrt! PUK1-Eingabe erforderlich.</string>
     <string name="lockscreen_too_many_failed_pin_attempts_dialog_message" msgid="6216672706545696955">"Sie haben Ihr Passwort <xliff:g id="NUMBER_0">%d</xliff:g>-mal falsch eingegeben."\n\n"Bitte versuchen Sie es in <xliff:g id="NUMBER_1">%d</xliff:g> Sekunden noch einmal."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="tablet" msgid="9191611984625460820">"Sie haben Ihr Entsperrungsmuster <xliff:g id="NUMBER_0">%d</xliff:g>-mal falsch gezeichnet. Nach <xliff:g id="NUMBER_1">%d</xliff:g> weiteren erfolglosen Versuchen werden Sie aufgefordert, Ihr Tablet mithilfe Ihrer Google-Anmeldeinformationen zu entsperren."\n\n" Bitte versuchen Sie es in <xliff:g id="NUMBER_2">%d</xliff:g> Sekunden noch einmal."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="default" msgid="2590227559763762751">"Sie haben Ihr Entsperrungsmuster <xliff:g id="NUMBER_0">%d</xliff:g>-mal falsch gezeichnet. Nach <xliff:g id="NUMBER_1">%d</xliff:g> weiteren erfolglosen Versuchen werden Sie aufgefordert, Ihr Telefon mithilfe Ihrer Google-Anmeldeinformationen zu entsperren."\n\n"Bitte versuchen Sie es in <xliff:g id="NUMBER_2">%d</xliff:g> Sekunden noch einmal."</string>

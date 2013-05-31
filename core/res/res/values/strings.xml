@@ -126,7 +126,7 @@
     <!-- Displayed when user attempts to change SIM PIN1 without enabling PIN1. -->
     <string name="enablePin">Unsuccessful. Enable SIM/RUIM LOCK.</string>
     <!-- Displayed when a SIM PIN/PUK is entered incorrectly. -->
-    <string name="pinpuk_attempts">\nAttempts Remaining :</string>
+    <string name="pinpuk_attempts">\nAttempts Remaining:</string>
     <!-- Title for the dialog used to display the user's IMEI number [CHAR LIMIT=10] -->
     <string name="imei">IMEI</string>
 
@@ -1955,11 +1955,11 @@
     <!-- Instructions telling the user to enter their SIM PUK to unlock the keyguard.
          Displayed in one line in a large font.  -->
     <string name="keyguard_password_enter_puk_code">Type PUK and new PIN code</string>
-    <string name="keyguard_password_enter_pin_code_for_subscription">Enter PIN code for SUB</string>
+    <string name="keyguard_password_enter_pin_code_for_subscription">Enter PIN code for SIM <xliff:g id="subscription">%d</xliff:g></string>
 
     <!-- Instructions telling the user to enter their SIM PUK for a particular subscription
          to unlock the keyguard. Displayed in one line in a large font.  -->
-    <string name="keyguard_password_enter_puk_code_for_subscription">Enter PUK and new PIN code for SUB</string>
+    <string name="keyguard_password_enter_puk_code_for_subscription">Enter PUK and new PIN code for SIM <xliff:g id="subscription">%d</xliff:g></string>
 
     <!-- Prompt to enter SIM PUK in Edit Text Box in unlock screen -->
     <string name="keyguard_password_enter_puk_prompt">PUK code</string>
