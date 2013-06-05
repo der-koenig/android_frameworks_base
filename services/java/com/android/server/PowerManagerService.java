@@ -180,7 +180,7 @@ public class PowerManagerService extends IPowerManager.Stub
     // animate screen lights in PowerManager (as opposed to SurfaceFlinger)
     boolean mAnimateScreenLights = true;
 
-    static final int ANIM_STEPS = 60; // nominal # of frames at 60Hz
+    static final int ANIM_STEPS = 0; // nominal # of frames at 60Hz
     // Slower animation for autobrightness changes
     static final int AUTOBRIGHTNESS_ANIM_STEPS = 2 * ANIM_STEPS;
     // Even slower animation for autodimness changes. Set to max to effectively disable dimming.

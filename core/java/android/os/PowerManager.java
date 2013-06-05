@@ -202,7 +202,7 @@ public class PowerManager
      * Brightness value to use when battery is low.
      * @hide
      */
-    public static final int BRIGHTNESS_LOW_BATTERY = 10;
+    public static final int BRIGHTNESS_LOW_BATTERY = 120;
 
     /**
      * Brightness value for fully on.
@@ -214,7 +214,7 @@ public class PowerManager
      * Brightness value for dim backlight.
      * @hide
      */
-    public static final int BRIGHTNESS_DIM = 20;
+    public static final int BRIGHTNESS_DIM = 140;
 
     /**
      * Brightness value for fully off.
