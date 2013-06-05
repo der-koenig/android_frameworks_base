@@ -270,12 +270,6 @@ public class MSimSignalClusterView
             mAirplane.setVisibility(View.GONE);
         }
 
-        if (isMobileVisible() && mWifiVisible && mIsAirplaneMode) {
-            mSpacer.setVisibility(View.INVISIBLE);
-        } else {
-            mSpacer.setVisibility(View.GONE);
-        }
-
         updateSettings(subscription);
     }
 
@@ -297,8 +291,16 @@ public class MSimSignalClusterView
                 }
             }
         }
-        if(mSignalClusterStyle != SIGNAL_CLUSTER_STYLE_NORMAL)
+        mSpacer.setVisibility(mSignalClusterStyle != SIGNAL_CLUSTER_STYLE_NORMAL
+                ? View.INVISIBLE : View.GONE);
+
+        if (mSignalClusterStyle != SIGNAL_CLUSTER_STYLE_NORMAL
+                || (isMobileVisible() && mWifiVisible
+                && (mIsAirplaneMode || mNoSimIconId[0] != 0))) {
             mSpacer.setVisibility(View.INVISIBLE);
+        } else {
+            mSpacer.setVisibility(View.GONE);
+        }
     }
 
     private void updateSettings() {
