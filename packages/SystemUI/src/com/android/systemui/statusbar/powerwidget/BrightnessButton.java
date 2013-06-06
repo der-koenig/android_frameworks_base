@@ -33,9 +33,9 @@ public class BrightnessButton extends PowerButton {
     // Auto-backlight level
     private static final int AUTO_BACKLIGHT = -1;
     // Mid-range brightness values + thresholds
-    private static final int LOW_BACKLIGHT = (int) (MAX_BACKLIGHT * 0.25f);
-    private static final int MID_BACKLIGHT = (int) (MAX_BACKLIGHT * 0.5f);
-    private static final int HIGH_BACKLIGHT = (int) (MAX_BACKLIGHT * 0.75f);
+    private static final int LOW_BACKLIGHT = (int) (MIN_BACKLIGHT + (MAX_BACKLIGHT - MIN_BACKLIGHT) * 0.25f);
+    private static final int MID_BACKLIGHT = (int) (MIN_BACKLIGHT + (MAX_BACKLIGHT - MIN_BACKLIGHT) * 0.5f);
+    private static final int HIGH_BACKLIGHT = (int) (MIN_BACKLIGHT + (MAX_BACKLIGHT - MIN_BACKLIGHT) * 0.75f);
 
     // Defaults for now. MIN_BACKLIGHT will be replaced later
     private static final int[] BACKLIGHTS = new int[] {
@@ -168,9 +168,14 @@ public class BrightnessButton extends PowerButton {
         String[] modes = parseStoredValue(Settings.System.getString(
                 resolver, Settings.System.EXPANDED_BRIGHTNESS_MODE));
         if (modes == null || modes.length == 0) {
-            mBacklightValues = new int[] {
-                    0, 1, 2, 3, 4, 5
-            };
+            if (mAutoBrightnessSupported)
+                mBacklightValues = new int[] {
+                        0, 1, 2, 3, 4, 5
+                };
+            else
+                mBacklightValues = new int[] {
+                        1, 2, 3, 4, 5
+                };
         } else {
             mBacklightValues = new int[modes.length];
             for (int i = 0; i < modes.length; i++) {
