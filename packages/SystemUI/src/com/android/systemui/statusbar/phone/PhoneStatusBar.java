@@ -431,8 +431,7 @@ public class PhoneStatusBar extends BaseStatusBar {
         mIconSize = res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_icon_size);
 
         mScreenWidth = (float) context.getResources().getDisplayMetrics().widthPixels;
-        mMinBrightness = context.getResources().getInteger(
-                com.android.internal.R.integer.config_screenBrightnessDim);
+        mMinBrightness = android.os.PowerManager.BRIGHTNESS_DIM + 10;
 
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             mStatusBarWindow = (StatusBarWindowView) View.inflate(context,
