@@ -154,7 +154,7 @@ LOCAL_SRC_FILES:= \
 	com_android_internal_net_NetworkStatsFactory.cpp
 
 ifeq ($(call is-vendor-board-platform,QCOM),true)
-LOCAL_SRC_FILES += com_android_internal_app_ActivityTrigger.cpp
+LOCAL_SRC_FILES += com_android_internal_app_ActivityTrigger.cpp android_hardware_fm.cpp 
 LOCAL_CFLAGS += -DQCOM_ACTIVITY_TRIGGER
 endif
 

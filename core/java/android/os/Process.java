@@ -100,9 +100,16 @@ public class Process {
     public static final int DRM_UID = 1019;
 
     /**
+     * Defines the UID/GID for the FM process.
+     * @hide
+     */
+    public static final int FM_RADIO_UID = 1299;
+
+    /**
      * Defines the UID/GID for the group that controls VPN services.
      * @hide
      */
+
     public static final int VPN_UID = 1016;
 
     /**

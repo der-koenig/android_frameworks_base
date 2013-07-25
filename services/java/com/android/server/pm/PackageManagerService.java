@@ -206,6 +206,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     private static final int NFC_UID = Process.NFC_UID;
     private static final int BLUETOOTH_UID = Process.BLUETOOTH_UID;
     private static final int SHELL_UID = Process.SHELL_UID;
+    private static final int FM_RADIO_UID = Process.FM_RADIO_UID;
 
     private static final boolean GET_CERTIFICATES = true;
 
@@ -1132,6 +1133,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                 ApplicationInfo.FLAG_SYSTEM|ApplicationInfo.FLAG_PRIVILEGED);
         mSettings.addSharedUserLPw("com.tmobile.thememanager", THEME_MAMANER_GUID,
                 ApplicationInfo.FLAG_SYSTEM|ApplicationInfo.FLAG_PRIVILEGED);
+        mSettings.addSharedUserLPw("android.uid.fm_radio", FM_RADIO_UID,
+                ApplicationInfo.FLAG_SYSTEM);
 
         mAppOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         String separateProcesses = SystemProperties.get("debug.separate_processes");
