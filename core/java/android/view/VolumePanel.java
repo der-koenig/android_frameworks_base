@@ -188,8 +188,8 @@ public class VolumePanel extends Handler implements OnSeekBarChangeListener, Vie
                 true),
         FMStream(AudioManager.STREAM_FM,
                 R.string.volume_icon_description_media,
-                R.drawable.ic_audio_vol,
-                R.drawable.ic_audio_vol_mute,
+                R.drawable.ic_audio_fm,
+                R.drawable.ic_audio_fm_mute,
                 true),
         // for now, use media resources for master volume
         MasterStream(STREAM_MASTER,
@@ -777,11 +777,6 @@ public class VolumePanel extends Handler implements OnSeekBarChangeListener, Vie
                 } else {
                     setMusicIcon(R.drawable.ic_audio_vol, R.drawable.ic_audio_vol_mute);
                 }
-                break;
-            }
-
-            case AudioManager.STREAM_FM: {
-                setMusicIcon(R.drawable.ic_audio_vol, R.drawable.ic_audio_vol_mute);
                 break;
             }
 
