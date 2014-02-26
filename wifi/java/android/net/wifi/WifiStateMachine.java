@@ -887,6 +887,8 @@ public class WifiStateMachine extends StateMachine {
     }
 
     private void startBatchedScan() {
+        logw("skipping start batch");
+        if (true) return;
         if (mBatchedScanSettings == null) return;
 
         if (mDhcpActive) {
@@ -967,6 +969,8 @@ public class WifiStateMachine extends StateMachine {
     }
 
     private void stopBatchedScan() {
+        logw("skipping stop batch");
+        if (true) return;
         mAlarmManager.cancel(mBatchedScanIntervalIntent);
         retrieveBatchedScanData();
         mWifiNative.setBatchedScanSettings(null);
