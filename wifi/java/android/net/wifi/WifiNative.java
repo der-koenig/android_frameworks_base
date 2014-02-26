@@ -257,7 +257,20 @@ public class WifiNative {
         if (!TextUtils.isEmpty(ret)) {
             String[] tokens = ret.split(" = ");
             if (tokens.length == 2) return tokens[1];
+        } else {
+            String status = status();
+            if (status == null) return null;
+
+            String[] tokens = status.split("\n");
+            for (String token : tokens) {
+                if (token.startsWith("address=")) {
+                    String[] nameValue = token.split("=");
+                    if (nameValue.length != 2) break;
+                    return nameValue[1];
+                }
+            }
         }
+
         return null;
     }
 
